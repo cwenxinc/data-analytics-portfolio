@@ -1,0 +1,353 @@
+---
+title: "Electric Vehicle Adoption Patterns"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+# Objective
+
+This project seeks to examine global trends in electric-vehicle adoption and compare adoption trajectories across leading regions in the electric-mobility landscape.
+
+# Data
+
+This project uses two data sets: historical electric-vehicle stock and sales (2010–2022) and projected stock and sales (2020–2030) produced under the Stated Policies Scenario (STEPS), which reflects current policies and conditions influencing EV adoption. Both data sets are sourced from the *Global EV Outlook*, an annual publication on global electric-mobility trends.
+
+The data sets are available from the IEA’s Global EV Data Explorer: https://www.iea.org/data-and-statistics/data-tools/global-ev-data-explorer
+
+```{r}
+historical_raw <- read_csv('data/ev-historical.csv')
+projected_raw <- read_csv('data/ev-steps-projected.csv')
+```
+
+## Validation
+
+Data validation followed four steps: verifying data types, identifying redundant fields, profiling missing values, and screening for invalid values. Because the two data sets share the same schema, the same procedure was applied to both. Neither contained missing or invalid values, but `category` and `mode` each had only one unique value.
+
+```{r helper}
+categorical_cols <- c('region', 'category', 'parameter', 'mode', 'powertrain', 'unit')
+numeric_cols <- c('year', 'value')
+
+validate <- function(data) {
+  # (i) profile fields
+  lapply(data[categorical_cols], unique) %>% print()
+  lapply(data[numeric_cols], range) %>% print()
+  
+  # (ii) profile missing values
+  data.frame(
+    missing_count = colSums(is.na(data)),
+    missing_percent = colMeans(is.na(data)) * 100
+  ) %>% print()
+  
+  # (iii) screen for invalid values
+  data %>%
+    mutate(
+      flag_out_of_range = case_when(
+        unit == 'percent' & (value < 0 | value > 100) ~ TRUE,
+        unit %in% c('Vehicles', 'Milion barrels per day', 
+                  'Oil displacement, million lge', 'GWh') & (value < 0) ~ TRUE,
+        TRUE ~ FALSE
+    )) %>%
+    mutate(
+      flag_wrong_unit = case_when(
+        grepl("(stock|sales)$", parameter) & unit != 'Vehicles' ~ TRUE, 
+        grepl("share$", parameter) & unit != 'percent' ~ TRUE,
+        grepl("Mbd$", parameter) & unit != 'Milion barrels per day' ~ TRUE,
+        grepl("lge$", parameter) & unit != 'Oil displacement, million lge' ~ TRUE,
+        parameter == 'Electricity demand' & unit != 'GWh' ~ TRUE,
+        TRUE ~ FALSE
+    )) %>%
+    summarize(
+      out_of_range_count = sum(flag_out_of_range), 
+      wrong_unit_count = sum(flag_wrong_unit)
+    )
+}
+```
+
+```{r}
+validate(historical_raw)
+validate(projected_raw)
+```
+
+## Cleaning
+
+For both data sets, `mode` was removed while `category` was retained to support comparison between historical and projected trends. In addition, the `parameter` and `unit` fields were standardized for visualization.
+
+```{r helper}
+clean <- function(data) {
+  clean_data <- data %>%
+    select(-mode) %>%
+    mutate(
+      unit = case_when(unit == 'Oil displacement, million lge' ~ 'Million lge', 
+                       unit == 'Milion barrels per day' ~ 'Million barrels per day',
+                       unit == 'percent' ~ 'Percent',
+                       TRUE ~ unit),
+      parameter = case_when(parameter == 'Oil displacement Mbd' ~ 'Oil displacement',
+                            parameter == 'Oil displacement, million lge' ~ 'Oil displacement',
+                            TRUE ~ parameter)
+    )
+  
+  return(clean_data)
+}
+```
+
+```{r}
+historical <- clean(historical_raw)
+projected <- clean(projected_raw)
+```
+
+# Analysis
+
+The analysis considers both sales (new vehicle purchases) and stock (vehicles in use) to provide a comprehensive view of adoption trends. It first situates EV adoption within the overall car market, then compares fully electric vehicles (BEVs) and plug-in hybrids (PHEVs) within the EV segment, and finally evaluates how projected trends align with historical patterns. Historical analysis includes both global trends and regional patterns in Europe and China, two leading electric-mobility markets identified by the International Energy Agency.
+
+```{r}
+regions <- c('China', 'Europe')
+```
+
+## EV Share
+
+```{r helper}
+compute_counts <- function(count, share) {
+  ev_count <- historical %>%
+    filter(region == 'World', parameter == count) %>%
+    pivot_wider(names_from = powertrain, values_from = value) %>%
+    mutate(EV = BEV + PHEV)
+  
+  all_counts <- historical %>%
+    filter(region == 'World', parameter == share) %>%
+    inner_join(ev_count, by = 'year') %>%
+    mutate(total = EV / (value / 100), 
+           non_EV = total - EV) %>%
+    select(c(year, BEV, PHEV, EV, non_EV, total))
+  
+  return(all_counts)
+}
+```
+
+```{r}
+# global sales
+compute_counts('EV sales', 'EV sales share') %>%
+  pivot_longer(cols = c(EV, non_EV), names_to = 'sales_type', values_to = 'n') %>%
+  ggplot(aes(x = factor(year), y = n, fill = sales_type)) +
+  geom_col() + 
+  scale_fill_manual(values = c("darkred", "gray"), 
+                    labels = c('EV sales', 'Non-EV sales')) + 
+  scale_y_continuous(breaks = seq(0, 90000000, by = 20000000), 
+                     labels = paste0(seq(0, 90, by = 20), 'M')) + 
+  labs(x = NULL, y = NULL, fill = NULL,
+       title = "Car sales that are electric vs non-electric, 2010-2022") + 
+  theme_minimal()
+
+# global stock
+compute_counts('EV stock', 'EV stock share') %>%
+  pivot_longer(cols = c(EV, non_EV), names_to = 'stock_type', values_to = 'n') %>%
+  ggplot(aes(x = factor(year), y = n, fill = stock_type)) +
+  geom_col() + 
+  scale_fill_manual(values = c("orange", "gray"), 
+                    labels = c('EV stock', 'Non-EV stock')) + 
+  scale_y_continuous(breaks = seq(0, 1200000000, by = 200000000), 
+                     labels = paste0(seq(0, 1.2, by = 0.2), 'B')) + 
+  labs(x = NULL, y = NULL, fill = NULL,
+       title = "Car stock that are electric vs non-electric, 2010-2022") + 
+  theme_minimal()
+```
+
+```{r}
+# global cont: look into share
+historical %>%
+  filter(region == 'World', 
+         parameter %in% c('EV sales share', 'EV stock share')) %>%
+  ggplot(aes(x = year, y = value)) + 
+  geom_line(aes(color = parameter)) + 
+  scale_x_continuous(breaks = 2010:2022) + 
+  scale_y_continuous(breaks = seq(0, 12, by = 4), 
+                     labels = paste0(seq(0, 12, by = 4), '%')) + 
+  scale_color_manual(values = c('darkred', 'orange'), 
+                     labels = c('Sales share', 'Stock share')) + 
+  labs(x = NULL, y = NULL, color = NULL, 
+       title = 'EV shar of the overall car market, 2010-2022') +
+  theme_minimal()
+```
+
+```{r}
+# by region
+historical %>%
+  filter(region %in% regions, 
+         parameter %in% c('EV sales share', 'EV stock share')) %>%
+  ggplot(aes(x = year, y = value)) + 
+  geom_line(aes(color = parameter)) + 
+  facet_wrap(~region, nrow = 2) + 
+  scale_x_continuous(breaks = seq(2010, 2022, by = 2)) + 
+  scale_y_continuous(breaks = seq(0, 30, by = 10), 
+                     labels = paste0(seq(0, 30, by = 10), '%')) + 
+  scale_color_manual(values = c('darkred', 'orange'), 
+                     labels = c('Sales share', 'Stock share')) + 
+  labs(x = NULL, y = NULL, color = NULL, 
+       title = 'EV share of the overall car market, 2010-2022') +
+  theme_minimal()
+```
+
+## BEV Share in EV
+
+```{r}
+# global sales
+historical %>%
+  filter(region == 'World', parameter == 'EV sales') %>%
+  ggplot(aes(x = factor(year), y = value, fill = powertrain)) + 
+  geom_col() + 
+  scale_fill_manual(values = c('darkred', 'gray')) + 
+  scale_y_continuous(breaks = seq(0, 10000000, by = 2000000), 
+                     labels = paste0(seq(0, 10, by = 2), 'M')) + 
+  labs(x = NULL, y = NULL, fill = NULL,
+       title = 'EV sales that are fully electric vs plug-in hybrid, 2010-2022') + 
+  theme_minimal()
+
+# global sales
+historical %>%
+  filter(region == 'World', parameter == 'EV stock') %>%
+  ggplot(aes(x = factor(year), y = value, fill = powertrain)) + 
+  geom_col() + 
+  scale_fill_manual(values = c('orange', 'gray')) + 
+  scale_y_continuous(breaks = seq(0, 25000000, by = 5000000), 
+                     labels = paste0(seq(0, 25, by = 5), 'M')) + 
+  labs(x = NULL, y = NULL, fill = NULL,
+       title = 'EV stock that are fully electric vs plug-in hybrid, 2010-2022') + 
+  theme_minimal()
+```
+
+```{r}
+# global cont: look into share
+historical %>%
+  filter(region == 'World', 
+         parameter %in% c('EV sales', 'EV stock')) %>%
+  pivot_wider(names_from = 'powertrain', values_from = 'value') %>%
+  mutate(BEV_share_in_EV = (BEV / (BEV + PHEV)) * 100) %>%
+  ggplot(aes(x = year, y = BEV_share_in_EV)) + 
+  geom_line(aes(color = parameter)) + 
+  scale_x_continuous(breaks = 2010:2022) + 
+  scale_y_continuous(breaks = seq(50, 100, by = 10), 
+                     labels = paste0(seq(50, 100, by = 10), '%')) + 
+  scale_color_manual(values = c('darkred', 'orange'), 
+                     labels = c('Sales share', 'Stock share')) + 
+  labs(x = NULL, y = NULL, color = NULL, 
+       title = 'BEV share of the EV market, 2010-2022') +
+  theme_minimal()
+```
+
+```{r}
+# by region
+historical %>%
+  filter(region %in% regions, 
+         parameter %in% c('EV sales', 'EV stock')) %>%
+  pivot_wider(names_from = 'powertrain', values_from = 'value') %>%
+  mutate(BEV_share_in_EV = (BEV / (BEV + PHEV)) * 100) %>%
+  ggplot(aes(x = year, y = BEV_share_in_EV)) + 
+  geom_line(aes(color = parameter)) + 
+  facet_wrap(~region, nrow = 2) + 
+  scale_x_continuous(breaks = seq(2010, 2022, by = 2)) + 
+  scale_y_continuous(breaks = seq(50, 100, by = 10), 
+                     labels = paste0(seq(50, 100, by = 10), '%')) + 
+  scale_color_manual(values = c('darkred', 'orange'), 
+                     labels = c('Sales share', 'Stock share')) + 
+  labs(x = NULL, y = NULL, color = NULL, 
+       title = 'BEV share of the EV market, 2010-2022') +
+  theme_minimal()
+```
+
+## Comparing Global Historical vs Projected Trends
+
+```{r}
+# global EV sales
+historical_share <- historical %>% 
+  filter(region == 'World', parameter == 'EV sales share')
+
+projected_share <- projected %>%
+  filter(region == 'World', parameter == 'EV sales share', 
+         year > 2022) # NOTE: historical data used for 2020-2022
+
+historical_share |> 
+  ggplot(aes(x = year, y = value)) + 
+  geom_line(aes(color = 'Historical data (2010-2022)')) + 
+  geom_line(data = projected_share, 
+            aes(x = year, y = value, color = 'Projected data (2025 & 2030)')) + 
+  scale_color_manual(values = c(
+    'Historical data (2010-2022)' = 'darkred', 
+    'Projected data (2025 & 2030)' = 'lightblue'
+  )) + 
+  scale_y_continuous(breaks = seq(0, 30, by = 10), 
+                     labels = paste0(seq(0, 30, by = 10), '%')) + 
+  labs(x = '', y = '', color = '', 
+       title = 'EV share of all car sales') + 
+  theme_minimal() # lower rate of increase
+```
+
+```{r}
+# global BEV share in EV sales
+projected_BEV_share <- projected %>%
+  filter(region == 'World', parameter == 'EV sales', year > 2022) %>%
+  pivot_wider(names_from = 'powertrain', values_from = 'value') %>%
+  mutate(EV = BEV + PHEV, 
+         BEV_share_in_EV = (BEV / EV) * 100)
+
+compute_counts('EV sales', 'EV sales share') %>%
+  mutate(BEV_share_in_EV = (BEV / EV) * 100) %>%
+  ggplot(aes(x = year, y = BEV_share_in_EV)) + 
+  geom_line(aes(color = 'Historical data (2010-2022)')) + 
+  geom_line(data = projected_BEV_share, 
+            aes(x = year, y = BEV_share_in_EV, color = 'Projected data (2025 & 2030)')) + 
+  scale_color_manual(values = c('Historical data (2010-2022)' = 'brown', 
+                                'Projected data (2025 & 2030)' = 'lightblue')) + 
+  scale_y_continuous(breaks = seq(50, 90, by = 10), 
+                     labels = paste0(seq(50, 90, by = 10), '%')) + 
+  labs(x = '', y = '', color = '', 
+       title = 'Share of EV sales that are fully electric') + 
+  theme_minimal() # lower rate
+```
+
+```{r}
+# global stock
+historical_share <- historical %>% 
+  filter(region == 'World', parameter == 'EV stock share')
+
+projected_share <- projected %>%
+  filter(region == 'World', parameter == 'EV stock share', 
+         year > 2022) # NOTE: historical data used for 2020-2022
+
+historical_share |> 
+  ggplot(aes(x = year, y = value)) + 
+  geom_line(aes(color = 'Historical data (2010-2022)')) + 
+  geom_line(data = projected_share, 
+            aes(x = year, y = value, color = 'Projected data (2025 & 2030)')) + 
+  scale_color_manual(values = c('Historical data (2010-2022)' = 'orange', 
+                                'Projected data (2025 & 2030)' = 'lightblue')) + 
+  scale_y_continuous(breaks = seq(0, 15, by = 5), 
+                     labels = paste0(seq(0, 15, by = 5), '%')) + 
+  labs(x = NULL, y = NULL, color = NULL, 
+       title = 'EV share of all cars in use') + 
+  theme_minimal() # higher rate of increase
+```
+
+```{r}
+projected_BEV_share <- projected %>%
+  filter(region == 'World', parameter == 'EV stock', year > 2022) %>%
+  pivot_wider(names_from = 'powertrain', values_from = 'value') %>%
+  mutate(EV = BEV + PHEV, 
+         BEV_share_in_EV = (BEV / EV) * 100)
+
+compute_counts('EV stock', 'EV stock share') %>%
+  mutate(BEV_share_in_EV = (BEV / EV) * 100) %>%
+  ggplot(aes(x = year, y = BEV_share_in_EV)) + 
+  geom_line(aes(color = 'Historical data (2010-2022)')) + 
+  geom_line(data = projected_BEV_share, 
+            aes(x = year, y = BEV_share_in_EV, color = 'Projected data (2025 & 2030)')) + 
+  scale_color_manual(values = c('Historical data (2010-2022)' = 'orange', 
+                                'Projected data (2025 & 2030)' = 'lightblue')) + 
+  scale_y_continuous(breaks = seq(60, 90, by = 10), 
+                     labels = paste0(seq(60, 90, by = 10), '%')) + 
+  labs(x = '', y = '', color = '', 
+       title = 'Share of EV sales that are fully electric') + 
+  theme_minimal() # rate continues
+```
