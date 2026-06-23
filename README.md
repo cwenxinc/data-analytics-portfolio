@@ -5,8 +5,9 @@ This repository contains a collection of my data analytics projects organized to
 ## Repository Structure
 Each project is organized in its own folder, which includes a README outlining the project’s purpose and key insights, R/Python scripts for data loading, cleaning, and analysis, deliverables, and raw and processed datasets where permissible.
 
+```
 data-analytics-portfolio/
-├── crmls_analytics
+├── crmls_market_analysis
 │   ├── scripts
 │   │   ├── listed_aggregate.py
 │   │   ├── listed_residential.py
@@ -16,9 +17,9 @@ data-analytics-portfolio/
 │   ├── competitive_analysis.pdf
 │   ├── report.pdf
 │   └── README.md
-├── crmls_prediction
+├── crmls_price_prediction
 │   └── README.md
-├── thaddeus
+├── thaddeus_resource_allocation_gaps
 │   ├── scripts
 │   │   ├── analysis_exploratory.rmd
 │   │   ├── analysis_final.rmd
@@ -28,7 +29,8 @@ data-analytics-portfolio/
 │   ├── programs_presentation.pdf
 │   ├── operations_presentation.pdf
 │   └── README.md
-├── la_crime
+├── la_crime_exposure_disparity
 │   ├── report.pdf
 │   └── README.md
 └── README.md
+```
