@@ -3,4 +3,32 @@
 This repository contains a collection of my data analytics projects organized to show my experience with end-to-end data analysis, statistical modeling, and model evaluation and interpretation. It involves coursework projects, research projects, and internship projects using Python and R.
 
 ## Repository Structure
-Each project is organized in its own folder, which includes a README outlining the project’s purpose and key insights, R/Python scripts for data loading, cleaning, and analysis, and raw and processed datasets where permissible.
+Each project is organized in its own folder, which includes a README outlining the project’s purpose and key insights, R/Python scripts for data loading, cleaning, and analysis, deliverables, and raw and processed datasets where permissible.
+
+data-analytics-portfolio/
+├── crmls_analytics
+│   ├── scripts
+│   │   ├── listed_aggregate.py
+│   │   ├── listed_residential.py
+│   │   ├── sold_aggregate.py
+│   │   ├── sold_residential.py
+│   ├── market_analysis.pdf
+│   ├── competitive_analysis.pdf
+│   ├── report.pdf
+│   └── README.md
+├── crmls_prediction
+│   └── README.md
+├── thaddeus
+│   ├── scripts
+│   │   ├── analysis_exploratory.rmd
+│   │   ├── analysis_final.rmd
+│   ├── data
+│   │   ├── programs_survey_raw.csv
+│   │   ├── programs_survey_clean.csv
+│   ├── programs_presentation.pdf
+│   ├── operations_presentation.pdf
+│   └── README.md
+├── la_crime
+│   ├── report.pdf
+│   └── README.md
+└── README.md
