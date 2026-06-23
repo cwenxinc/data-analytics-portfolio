@@ -19,18 +19,18 @@ data-analytics-portfolio
 │   └── README.md
 ├── crmls_price_prediction
 │   └── README.md
+├── la_crime_exposure_disparity
+│   ├── report.pdf
+│   └── README.md
 ├── thaddeus_resource_allocation_gaps
 │   ├── scripts
 │   │   ├── analysis_exploratory.rmd
 │   │   ├── analysis_final.rmd
 │   ├── data
-│   │   ├── programs_survey_raw.csv
 │   │   ├── programs_survey_clean.csv
-│   ├── programs_presentation.pdf
+│   │   ├── programs_survey_raw.csv
 │   ├── operations_presentation.pdf
-│   └── README.md
-├── la_crime_exposure_disparity
-│   ├── report.pdf
+│   ├── programs_presentation.pdf
 │   └── README.md
 └── README.md
 ```
