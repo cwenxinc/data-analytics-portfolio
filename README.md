@@ -6,7 +6,7 @@ This repository contains a collection of my data analytics projects organized to
 Each project is organized in its own folder, which includes a README outlining the project’s purpose and key insights, R/Python scripts for data loading, cleaning, and analysis, deliverables, and raw and processed datasets where permissible.
 
 ```
-data-analytics-portfolio/
+data-analytics-portfolio
 ├── crmls_market_analysis
 │   ├── scripts
 │   │   ├── listed_aggregate.py
