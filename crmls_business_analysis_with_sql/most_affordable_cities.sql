@@ -1,4 +1,3 @@
-
 -- =======================================================================
 -- This script runs queries that utilize SELECT, WHERE, ORDER BY, and/or 
 -- LIMIT to find where the most affordable options are for the sales team.
@@ -8,11 +7,9 @@
 -- but Los Angeles has the most listings under the city's average price.
 -- =======================================================================
 
-
 -- =======================================================================
 -- Practice with SELECT, WHERE, ORDER BY, LIMIT
 -- =======================================================================
-
 -- 3+ bedroom listings under $700k in Los Angeles
 SELECT L_DisplayId, L_SystemPrice, L_Keyword2
 FROM rets_property
@@ -45,7 +42,6 @@ LIMIT 10;
 -- Business scenario: The sales team wants to put together a buyer's guide 
 -- to show customers where the most affordable options are
 -- =======================================================================
-
 -- The result depends on how the sales team defines 'affordable':
 -- (i) If the team defines 'affordable' as low list price
 SELECT L_DisplayId, L_City, L_Address, L_SystemPrice
