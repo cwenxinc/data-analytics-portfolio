@@ -1,7 +1,4 @@
-
--- ======================================================================
--- Overview
--- ======================================================================
+-- =======================================================================
 -- This script explores the structure of the database and performs data
 -- quality checks to identify NULLs, duplicates, outliers, and 
 -- inconsistencies.
@@ -13,19 +10,19 @@
 --    LM_Dec_3 (bathrooms), LM_int2_3 (square footage), and L_City.
 -- 4. Numeric columns often contain outliers. This applies to both 
 --    rets_property and california_sold.
--- ======================================================================
+-- =======================================================================
 
--- ======================================================================
--- Part 1: List the tables and their metadata (row counts and sizes in megabytes)
--- ======================================================================
+-- =======================================================================
+-- Part 1: List the tables and their metadata (row counts and sizes in mb)
+-- =======================================================================
 SELECT TABLE_NAME, TABLE_ROWS, (DATA_LENGTH / 1024 / 1024) AS size_mb
 FROM INFORMATION_SCHEMA.TABLES
 WHERE TABLE_SCHEMA = 'rets'
 ORDER BY size_mb DESC;
 
--- ======================================================================
+-- =======================================================================
 -- Part 2.1: Explore the structure of rets_property
--- ======================================================================
+-- =======================================================================
 -- NOTE: All columns except for identifier and timestamps can contain nulls
 SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_COMMENT
 FROM INFORMATION_SCHEMA.COLUMNS
@@ -68,9 +65,9 @@ FROM rets_property
 GROUP BY L_DisplayId
 HAVING occurrences > 1;
 
--- ======================================================================
+-- =======================================================================
 -- Part 2.2: Explore the structure of rets_openhouse
--- ======================================================================
+-- =======================================================================
 -- NOTE: API openhouse start date and end date can be null
 SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_COMMENT
 FROM INFORMATION_SCHEMA.COLUMNS
@@ -91,9 +88,9 @@ FROM rets_openhouse;
 SELECT COUNT(L_DisplayId) AS total_count, COUNT(DISTINCT L_DisplayId) AS distinct_count
 FROM rets_openhouse;
 
--- ======================================================================
+-- =======================================================================
 -- Part 2.3: Explore the structure of california_sold
--- ======================================================================
+-- =======================================================================
 -- NOTE: All columns can contain nulls
 SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_COMMENT
 FROM INFORMATION_SCHEMA.COLUMNS
@@ -137,9 +134,9 @@ FROM california_sold;
 SELECT COUNT(*) AS total_count, COUNT(DISTINCT ListingKey) AS distinct_count
 FROM california_sold;
 
--- ======================================================================
+-- =======================================================================
 -- Part 3: Understand table relationships with cardinality checks
--- ======================================================================
+-- =======================================================================
 -- Because rets_property and rets_openhouse both feature active listings, we need to check if their relationship is one-to-one or one-to-many
 -- If we have one-to-many relationships, joining the tables would result in multiple joined rows for each key and inflate aggregations like counts
 
@@ -176,5 +173,3 @@ WHERE City NOT IN (
 	FROM rets_property
 	WHERE L_City IS NOT NULL -- recall the 72 nulls in L_City
 );
-
-
