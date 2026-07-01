@@ -85,7 +85,7 @@ JOIN city_avg c ON p.L_City = c.L_City
 GROUP BY p.L_City
 ORDER BY under_avg_count DESC;
 
--- If the team puts more emphasis on bedroom/bathroom configuration and is looking for cities with the best bedroom/bathroom value
+-- If the team puts more emphasis on bedroom/bathroom configuration and is looking for cities with the best value per bedroom/bathroom
 -- ANSWER: Markleeville, followed by Ravendale and Westwood
 SELECT L_City, ROUND(AVG(L_SystemPrice / L_Keyword2), 2) AS avg_bedroom_value
 FROM rets_property
