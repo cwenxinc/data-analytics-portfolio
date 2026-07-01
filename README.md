@@ -17,6 +17,8 @@ data-analytics-portfolio
 │   ├── competitive_analysis.pdf
 │   ├── report.pdf
 │   └── README.md
+├── crmls_business_analysis_with_sql
+│   └── README.md
 ├── crmls_price_prediction
 │   └── README.md
 ├── la_crime_exposure_disparity
