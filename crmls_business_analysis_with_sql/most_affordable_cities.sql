@@ -1,6 +1,7 @@
 -- =======================================================================
--- This script runs queries that utilize SELECT, WHERE, ORDER BY, and/or 
--- LIMIT to find where the most affordable options are for the sales team.
+-- This script runs queries that utilize SELECT, WHERE, ORDER BY, and 
+-- LIMIT to help the sales team identify where the most affordable 
+-- properties are.
 -- The result varies based on how affordability is defined:
 -- Markleeville appears to be the most affordable for home buyers in terms 
 -- of average price, average price per sq ft, and average bedroom value, 
