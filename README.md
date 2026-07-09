@@ -7,6 +7,12 @@ Each project is organized in its own folder, which includes a README outlining t
 
 ```
 data-analytics-portfolio
+├── crmls_business_analysis_with_sql
+│   ├── most_affordable_cities.sql
+│   ├── most_promising_cities.sql
+│   ├── openhouse_recommendations.sql
+│   ├── schema_exploration.sql
+│   └── README.md
 ├── crmls_market_analysis
 │   ├── scripts
 │   │   ├── listed_aggregate.py
@@ -16,10 +22,6 @@ data-analytics-portfolio
 │   ├── market_analysis.pdf
 │   ├── competitive_analysis.pdf
 │   ├── report.pdf
-│   └── README.md
-├── crmls_business_analysis_with_sql
-│   └── README.md
-├── crmls_price_prediction
 │   └── README.md
 ├── la_crime_exposure_disparity
 │   ├── report.pdf
