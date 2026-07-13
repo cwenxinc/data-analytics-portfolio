@@ -1,7 +1,8 @@
-# Overview
+# CRMLS Business Analysis
 This project analyzes California MLS real estate data across three MySQL tables using DBeaver to answer key business questions about the housing market.
 
 ## Database
+The database consists of three tables:
 - rets_property: active listings
 - rets_openhouse: open house schedules and details, linked to rets_property via the unique listing identifier
 - california_sold: historical sales
