@@ -25,7 +25,7 @@ business_scenarios
 └── sacramento_market_conditions.sql      - Subqueries and CTEs
 executive_summary
 ├── final_investor_summary.sql            - Deliverable
-├── summary_final.csv                     - CSV export of key market metrics and competitiveness scores for all California cities
-└── summary_full.csv                      - CSV export of key market metrics and market classifications for 10 major California cities
+├── summary_final.csv                     - CSV export of key market metrics and market classifications for 10 major California cities
+└── summary_full.csv                      - CSV export of key market metrics and competitiveness scores for all California cities
 README.md
 ```
