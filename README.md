@@ -1,40 +1,13 @@
 # Data Analytics Portfolio
-
-This repository contains a collection of my data analytics projects organized to show my experience with end-to-end data analysis, statistical modeling, and model evaluation and interpretation. It involves coursework projects, research projects, and internship projects using Python and R.
+This repository houses a collection of analytics projects to show my experience with end-to-end data analysis and statistical modeling, as well as model evaluation and interpretation. It includes coursework, research, and internship projects using ***Python***, ***R***, and ***SQL***.
 
 ## Repository Structure
-Each project is organized in its own folder, which includes a README outlining the project’s purpose and key insights, R/Python scripts for data loading, cleaning, and analysis, deliverables, and raw and processed datasets where permissible.
-
+Each project is organized in its own folder, which includes a README outlining the project’s purpose and key findings, scripts for data loading, cleaning, and analysis, deliverables, and raw and processed datasets where permissible.
 ```
 data-analytics-portfolio
 ├── crmls_business_analysis_with_sql
-│   ├── most_affordable_cities.sql
-│   ├── most_promising_cities.sql
-│   ├── openhouse_recommendations.sql
-│   ├── schema_exploration.sql
-│   └── README.md
 ├── crmls_market_analysis
-│   ├── scripts
-│   │   ├── listed_aggregate.py
-│   │   ├── listed_residential.py
-│   │   ├── sold_aggregate.py
-│   │   ├── sold_residential.py
-│   ├── market_analysis.pdf
-│   ├── competitive_analysis.pdf
-│   ├── report.pdf
-│   └── README.md
 ├── la_crime_exposure_disparity
-│   ├── report.pdf
-│   └── README.md
 ├── thaddeus_resource_allocation_gaps
-│   ├── scripts
-│   │   ├── analysis_exploratory.rmd
-│   │   ├── analysis_final.rmd
-│   ├── data
-│   │   ├── programs_survey_clean.csv
-│   │   ├── programs_survey_raw.csv
-│   ├── operations_presentation.pdf
-│   ├── programs_presentation.pdf
-│   └── README.md
 └── README.md
 ```
