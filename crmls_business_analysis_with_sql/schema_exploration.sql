@@ -2,7 +2,7 @@
 -- This script explores the structure of the database and performs data
 -- quality checks to identify NULLs, duplicates, outliers, and 
 -- inconsistencies.
--- We keep the following issues in mind:
+-- We keep the following data issues in mind:
 -- 1. 30776 listings in rets_property do not have open house records.
 -- 2. california_sold contains a more comprehensive list of cities than
 --    rets_property.
