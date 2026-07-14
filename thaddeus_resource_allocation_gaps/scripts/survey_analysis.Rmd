@@ -1,0 +1,386 @@
+---
+title: "Programs Staff Experience Analysis: Findings"
+author: "Wenxin Cui"
+output: pdf_document
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(ggplot2)
+library(scales)
+```
+
+**Disclaimer**: The findings in this analysis reflect the status of the Programs Department as of **November 11, 2025**. Since then, structural changes have been implemented within the department. Results may differ if the analysis is repeated using more recent data.
+
+```{r load data}
+survey_clean <- read.csv("programs_survey_clean.csv")
+```
+
+# Department Overview
+
+## Role composition
+
+```{r}
+N <- nrow(survey_clean)
+
+role_composition <- survey_clean %>%
+  group_by(role) %>% 
+  summarize(n = n(), perc = round((n / N) * 100))
+
+role_composition %>%
+  ggplot(aes(x = 1, y = perc, fill = role)) + 
+  geom_col() + 
+  coord_polar(theta = "y") + 
+  geom_text(aes(label = paste0(n, " (", paste0(perc, "%"), ")")),
+            position = position_stack(vjust = 0.5), 
+            size = 3.6) + 
+  theme_void() + 
+  scale_fill_brewer(name = NULL, palette = "RdYlGn")
+```
+
+## Work satisfaction
+
+```{r}
+survey_clean$tenure <- factor(survey_clean$tenure, 
+                              levels = c("1-2 months", "3-5 months", "6-11 months", "1-2 years", "More than 2 years"))
+
+survey_clean %>% 
+  group_by(role, tenure) %>%
+  summarize(mean_satisfaction = mean(as.numeric(satisfaction_5)), 
+            .groups = "drop") |> 
+  ggplot(aes(x = role, y = tenure, fill = mean_satisfaction)) + 
+  geom_tile() + 
+  scale_fill_gradient2(
+    low = "#d73027", 
+    mid = "#fee08b",      
+    high = "#1a9850",    
+    midpoint = 3,
+    name = NULL,
+    limits = c(1, 5),
+    breaks = c(1, 2, 3, 4, 5),
+    labels = c("Low", "Somewhat Low", "Neutral", "Somewhat High", "High")
+  ) + 
+  labs(x = "Role", y = "Tenure") + 
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 20, hjust = 1))
+```
+
+# Staff Workload and Performance
+
+```{r helper}
+# helper function computing unbiased standard deviation estimate
+unbiased_sd <- function(v) {
+  sqrt(sum((v - mean(v, na.rm = TRUE))^2) / (length(v) - 1))
+}
+```
+
+## Client load (client-facing roles only)
+
+```{r setup}
+client_facing_roles <- survey_clean %>% 
+  filter(!is.na(num_clients) & num_clients > 0)
+```
+
+```{r overall}
+# each staff member typically manages more than five clients
+client_facing_roles %>% 
+  summarize(n_staff = n(), 
+            mean = mean(num_clients), 
+            sd = round(unbiased_sd(num_clients), 2), 
+            min = min(num_clients), 
+            max = max(num_clients))
+
+# three staff members have notably higher client caseloads than their peers
+client_facing_roles %>% 
+  filter(num_clients > mean(num_clients) + unbiased_sd(num_clients))
+# none of the staff members has notably lower client caseloads than their peers
+client_facing_roles %>% 
+  filter(num_clients < mean(num_clients) - unbiased_sd(num_clients))
+```
+
+```{r by role}
+# care coordinators have the heaviest client load, followed by therapists and case managers
+(client_load <- client_facing_roles %>% 
+  group_by(role) %>%
+  summarize(n_staff = n(), 
+            mean = round(mean(num_clients), 2), 
+            sd = round(unbiased_sd(num_clients), 2), 
+            min = min(num_clients), 
+            max = max(num_clients)) %>% 
+  arrange(desc(mean)))
+
+client_load %>% 
+  ggplot(aes(x = role, y = mean)) + 
+  geom_bar(stat = "identity", fill = "#fee08b") +
+  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd),
+                width = 0.2, 
+                position = position_dodge(0.9)) + 
+  scale_y_continuous(limits = c(0, 20), 
+                     breaks = breaks_pretty()) + 
+  labs(x = "Role", y = "Average Number of Clients") + 
+  theme_minimal()
+```
+
+## Task completion (all roles)
+
+```{r setup}
+task_completion <- survey_clean %>% 
+  mutate(completion_freq = as.numeric(completion_freq))
+```
+
+```{r overall}
+# 3 out of 21 staff members (14.29%) reported difficulty completing tasks as expected
+task_completion %>%
+  summarize(n_staff = n(), 
+            mean = round(mean(completion_freq), 2), 
+            sd = round(unbiased_sd(completion_freq), 2), 
+            n_below_expectation = sum(completion_freq < 4), # completing tasks "often" is used as the threshold
+            perc_below_expectation = round((n_below_expectation / n_staff) * 100, 2))
+```
+
+```{r by role}
+# half of non-profit leadership reported difficulty completing tasks as expected
+# all case managers and resource navigators reported no issue with completion
+(task_completion_by_role <- task_completion %>%
+  group_by(role) %>% 
+  summarize(n_staff = n(), 
+            mean = round(mean(completion_freq), 2), 
+            sd = round(unbiased_sd(completion_freq), 2), 
+            n_below_expectation = sum(completion_freq < 4), # frequent completion is used as the threshold
+            perc_below_expectation = round((n_below_expectation / n_staff) * 100, 2)) |> 
+  arrange(mean))
+
+task_completion_by_role %>%
+  ggplot(aes(x = role, y = mean)) + 
+  geom_bar(stat = "identity", fill = "#fee08b") + 
+  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd),
+                width = 0.2, 
+                position = position_dodge(0.9)) + 
+  labs(x = "Role", y = "Average Task Completion Frequency") + 
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 20, hjust = 1))
+```
+
+```{r anova}
+# analysis of variance (F-test) compares mean task scompletion across all roles
+# completion is not the same across roles
+aov <- aov(completion_freq ~ role, data = task_completion)
+summary(aov)[[1]][["Pr(>F)"]][1] < 0.05 # significance level is set at 0.05
+
+# post-hoc tukey comparison shows which role pairs have substantially different mean task completion
+# largest (and statistically significant) gap in completion is seen between resource navigators and non-profit leadership
+# marginally significant difference between non-profit leadership and case managers, non-profit leadership and care coordinators, therapists and resource navigators
+# little to no difference between other role pairs
+TukeyHSD(aov)
+```
+
+## Relationship between client load and task completion (client-facing roles only)
+
+```{r setup}
+performance <- task_completion %>%
+  filter(!is.na(num_clients) & num_clients > 0)
+```
+
+```{r overall}
+# little correlation between overall client load and task completion
+cor(performance$num_clients, performance$completion_freq, use = "complete.obs") |> round(2)
+cor.test(performance$num_clients, performance$completion_freq)$p.value < 0.05
+```
+
+```{r by role}
+# for care coordinators and case managers, heavier client load is associated with better completion
+# for therapists though, heavier client load is associated with worse completion
+# the correlation is marginally significant for care coordinators
+performance %>%
+  group_by(role) %>%
+  summarize(cor = round(cor(num_clients, completion_freq, use = "complete.obs"), 2), 
+            pval = round(cor.test(num_clients, completion_freq)$p.value, 2), 
+            significant = pval < 0.05)
+```
+
+# Internal Resources
+
+## Training
+
+```{r setup}
+training_cols <- paste0("training_", 1:7)
+
+training <- survey_clean %>%
+  select(all_of(c("role", "tenure", "num_clients", "is_mentor", training_cols))) %>% 
+  mutate(across(all_of(training_cols), ~as.numeric(.)))
+```
+
+```{r overall}
+# knowledge of partnerships/referral networks is the most lacking, followed by client management and community resources
+(training_overall <- training %>% 
+  pivot_longer(cols = all_of(training_cols), names_to = "training_area", values_to = "adequacy") %>% 
+  group_by(training_area) %>%
+  summarize(n = sum(!is.na(adequacy)), 
+            mean = round(mean(adequacy, na.rm = TRUE), 2), 
+            sd = round(sd(adequacy, na.rm = TRUE), 2), # not using unbiased estimate here because sample size is sufficient
+            min = min(adequacy, na.rm = TRUE), 
+            max = max(adequacy, na.rm = TRUE)) |> 
+  arrange(mean))
+
+training_overall |> 
+  mutate(training_area = case_when(
+    training_area == "training_1" ~ "Internal tools and systems", 
+    training_area == "training_2" ~ "Community resources", 
+    training_area == "training_3" ~ "Established partnerships", 
+    training_area == "training_4" ~ "Client interactions", 
+    training_area == "training_5" ~ "Relevant policies", 
+    training_area == "training_6" ~ "Role-specific skills", 
+    training_area == "training_7" ~ "My role in the bigger picture", 
+    TRUE ~ NA_character_
+  )) |> 
+  ggplot(aes(x = training_area, y = mean)) + 
+  geom_bar(stat = "identity", fill = "#fee08b") + 
+  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd),
+                width = 0.2, 
+                position = position_dodge(0.9)) + 
+  labs(x = "Training Area", y = "Average Adequacy") + 
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 25, hjust = 1))
+```
+
+```{r by role}
+# half of non-profit leadership reported lacking training in all areas
+# large share of case managers reported inadequate training in internal tools
+# large share of care coordinators, therapists, and resource navigators all reported lacking training in client service (e.g. referral networks, interactions with clients, relevant policies) 
+training %>%
+  pivot_longer(cols = all_of(training_cols), names_to = "training_area", values_to = "adequacy") |> 
+  group_by(role, training_area) |> 
+  summarize(n = sum(!is.na(adequacy)), 
+            mean = round(mean(adequacy, na.rm = TRUE), 2),
+            n_inadequate = sum(adequacy < 4, na.rm = TRUE), # "fair" amount of training is used as the threshold
+            perc_inadequate = round((n_inadequate / n) * 100)) |> 
+  arrange(role, desc(perc_inadequate))
+```
+
+```{r by role and training category}
+# develop a composite score for each major training category by weighting all constituent areas equally
+
+# non-profit leadership reported inadequate training across all types
+# care coordinators and therapists reported lacking client-focused training
+# case managers reported lacking technical training
+training_composites <- training %>% 
+  rowwise() %>%
+  mutate(client_score = mean(c_across(contains(c("2", "3", "4", "5"))), na.rm = TRUE), 
+         technical_score = mean(c_across(contains("1")), na.rm = TRUE), 
+         role_specific_score = mean(c_across(contains(c("6", "7"))), na.rm = TRUE), 
+         overall_score = mean(c_across(all_of(training_cols)), na.rm = TRUE)) %>% 
+  ungroup()
+
+training_composites %>% 
+  group_by(role) %>% 
+  summarize(mean_client = round(mean(client_score, na.rm = TRUE), 2), 
+            mean_technical = round(mean(technical_score, na.rm = TRUE), 2), 
+            mean_role_specific = round(mean(role_specific_score, na.rm = TRUE), 2),
+            mean_overall = round(mean(overall_score, na.rm = TRUE), 2)) %>%
+  arrange(mean_overall)
+```
+
+## Management and work culture (collectively referred to as "support")
+
+```{r setup}
+support_cols <- c(
+  paste0("management_", 1:4), 
+  paste0("team_", 1:4),
+  paste0("support_", 1:4),
+  paste0("growth_", 1:4)
+)
+
+support <- survey_clean %>%
+  select(all_of(c("role", "tenure", "num_clients", "is_mentor", support_cols)))
+
+# support_2 is a negative statement so flip the coding (e.g. disagreeing to delays means agreeing to efficiency)
+support <- support %>%
+  mutate(support_2 = case_when(
+    support_2 == 1 ~ 5, 
+    support_2 == 2 ~ 4,
+    support_2 == 3 ~ 3, 
+    support_2 == 4 ~ 2, 
+    support_2 == 5 ~ 1, 
+    TRUE ~ NA_real_
+  ))
+
+support <- support %>% 
+  mutate(across(all_of(support_cols), ~as.numeric(.)))
+```
+
+```{r overall}
+# staff generally perceived internal support as fair (in the 4-5 range)
+# complaint is most commonly directed at delays, followed by internal advancement and communication of expectations
+support %>%
+  pivot_longer(cols = all_of(support_cols), names_to = "support_area", values_to = "satisfaction") %>%
+  group_by(support_area) %>%
+  summarize(n = sum(!is.na(satisfaction)), 
+            mean = round(mean(satisfaction, na.rm = TRUE), 2), 
+            sd = round(sd(satisfaction, na.rm = TRUE), 2), # not using unbiased estimate here because sample size is sufficient
+            min = min(satisfaction, na.rm = TRUE), 
+            max = max(satisfaction, na.rm = TRUE)) |> 
+  arrange(mean)
+```
+
+```{r by role and support category}
+# develop a composite score for each major support category by weighting all constituent areas equally
+
+# non-profit leadership reported the lowest support overall, particularly in communication and troubleshooting
+# therapists reported low support in troubleshooting
+support_composites <- support %>%
+  rowwise() |> 
+  mutate(comm_score = mean(c_across(contains("management")), na.rm = TRUE), 
+         culture_score = mean(c_across(contains("team")), na.rm = TRUE), 
+         help_score = mean(c_across(contains("support")), na.rm = TRUE), 
+         growth_score = mean(c_across(contains("growth")), na.rm = TRUE), 
+         overall_score = mean(c_across(all_of(support_cols)), na.rm = TRUE)) |> 
+  ungroup()
+
+support_composites %>%
+  group_by(role) %>% 
+  summarize(mean_comm = round(mean(comm_score), 2), 
+            mean_culture = round(mean(culture_score), 2), 
+            mean_help = round(mean(help_score), 2), 
+            mean_growth = round(mean(growth_score), 2), 
+            mean_overall = round(mean(overall_score), 2)) |> 
+  arrange(mean_overall)
+```
+
+## Relationship between Resources and Performance
+
+```{r setup}
+resources <- task_completion %>% 
+  select(all_of(c("role", "tenure", "num_clients", "is_mentor", 
+                  "completion_freq", training_cols, support_cols))) %>% 
+  mutate(across(all_of(training_cols), ~as.numeric(.))) |> 
+  mutate(across(all_of(support_cols), ~as.numeric(.)))
+```
+
+```{r overall}
+# develop a composite score for each major resource category by weighting all constituent areas equally
+resource_composites <- resources %>%
+  rowwise() %>%
+  mutate(mean_training = mean(c_across(all_of(training_cols)), na.rm = TRUE), 
+         mean_support = mean(c_across(all_of(support_cols)), na.rm = TRUE), 
+         mean_overall = mean(c(mean_training, mean_support), na.rm = TRUE))
+
+# training and support both show a positive association with task completion
+# client load shows little association with perceptions in training, support, or task completion
+resource_composites %>%
+  select(num_clients, mean_training, mean_support, mean_overall, completion_freq) %>% 
+  cor(use = "complete.obs")
+cor.test(resource_composites$mean_training, resource_composites$completion_freq)
+cor.test(resource_composites$mean_support, resource_composites$completion_freq)
+```
+
+```{r by role}
+resource_composites %>% 
+  filter(role != "Non-profit leadership") %>% # exclude non-profit leadership because there are too few data points for reliable testing
+  group_by(role) %>%
+  summarize(cor_training = cor(mean_training, completion_freq, use = "complete.obs"),
+            cor_training_p = cor.test(mean_training, completion_freq)$p.value, 
+            cor_support = cor(mean_support, completion_freq, use = "complete.obs"),
+            cor_support_p = cor.test(mean_support, completion_freq)$p.value)
+```
