@@ -1,7 +1,7 @@
 # Staff Support Resource Allocation Analysis
 This project was a collaboration between the Operations Department and Programs Department at Thaddeus Resource Center. 
 
-Over three months, I partnered with a fellow Operations intern to design and administer a staff experience survey for the Programs Department using ***Microsoft Forms***, analyze responses in ***R*** to assess training and support needs, and develop data-driven recommendations to enhance staff satisfaction, operational efficiency, and client service delivery. Key deliverables include three ***stakeholder-specific PowerPoint presentations*** tailored to senior executives, the Programs Department, and the Operations Department.
+Over three months, I partnered with a fellow Operations intern to design and administer a staff experience survey for the Programs Department using ***Microsoft Forms***, analyze responses in ***R*** to assess training and support needs, and develop data-driven recommendations to enhance staff satisfaction, operational efficiency, and client service delivery. Key deliverables include three stakeholder-specific ***PowerPoint presentations*** tailored to senior executives, the Programs Department, and the Operations Department.
 
 ## Project Background
 The **Programs Department** provides services to clients across Southern California, primarily supporting at-risk youth, single mothers, and families in need. The department consists of six roles, each contributing to different aspects of client support:
@@ -21,7 +21,16 @@ The Programs Department had 29 staff members at the time of the project:
 The final analysis included all roles **except life coaches** due to the absence of survey responses and interview participation from this group.
 
 ## Key Findings
+- Staff generally reported high work satisfaction, though satisfaction varied by role and tenure. Care coordinators, nonprofit leadership, and resource navigators showed within-role differences, with longer-tenured staff reporting lower satisfaction than newer-tenured staff.
+- Perceived productivity varied across roles, with nonprofit leadership reporting the greatest challenges with consistent task completion. Post-hoc ANOVA found that only the difference between nonprofit leadership and resource navigators was statistically significant (Tukey adjusted p-value = 0.039; 95% CI for difference in means excluded 0).
+- Client caseload showed role-specific relationships with perceived productivity: higher caseloads were associated with higher perceived productivity among care coordinators (r = 0.86) and case managers (r = 0.46), but lower perceived productivity among therapists (r = -0.76).
+- Perceived training adequacy was strongly associated with reported productivity across all roles, particularly among resource navigators (r = 0.96, Pearson correlation p-value = 0.00075). However, training gaps varied by role: nonprofit leadership reported broad needs across multiple areas, care coordinators and therapists prioritized client-focused training, and case managers requested additional technical training on internal tools.
+- Management support emerged as an area for improvement, particularly among nonprofit leadership and therapists, who reported weaker communication and troubleshooting support. Higher perceived management support was associated with higher reported productivity across roles, with a marginally significant relationship among care coordinators (r = 0.93, Pearson correlation p-value = 0.07).
 
+Because staff needs varied considerably by role, recommendations were tailored accordingly. Key recommendations included: 
+- Developing role-specific training resources with different training priorities and clarifying role expectations
+- Designating and training department representatives to improve information flow between leadership and staff and streamline approval processes
+- Consolidating reference materials and providing standardized templates for administrative tasks
 
 ## Directory Structure
 ```
