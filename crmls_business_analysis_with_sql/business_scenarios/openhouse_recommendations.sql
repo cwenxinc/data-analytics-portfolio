@@ -3,11 +3,11 @@
 -- and weekend days that generate the strongest open house engagement, 
 -- helping the sales team prioritize where and when to host events.
 
--- Based on the analysis, we recommend hosting open houses in Los Angeles 
--- and San Diego on both Saturdays and Sundays, as well as in San Jose 
--- and Palm Desert on Saturdays. These city–day combinations exhibited 
--- both a high number of open houses and a high proportion of listings 
--- with open houses, suggesting strong buyer interest.
+-- Based on the analysis, we recommend hosting open houses on both 
+-- Saturdays and Sundays in Los Angeles and San Diego, and on Saturdays 
+-- in San Jose and Palm Desert. These city–day combinations showed both
+-- high open house volume and high open house rate among active listings, 
+-- suggesting greater buyer engagement.
 -- =======================================================================
 
 
@@ -82,12 +82,20 @@ ORDER BY list_price DESC;
 -- =======================================================================
 
 -- Restrict to open house records on weekends and identify cities with high open house activity
-SELECT rp.L_City,
-       DAYNAME(ro.OpenHouseDate) AS day_of_week,
-       COUNT(DISTINCT ro.L_DisplayId) AS num_openhouses,
-       COUNT(DISTINCT ro.L_DisplayId) / COUNT(DISTINCT rp.L_DisplayId) AS perc_with_openhouse
-FROM rets_property rp
-LEFT JOIN rets_openhouse ro ON rp.L_DisplayId = ro.L_DisplayId
-GROUP BY rp.L_City, day_of_week
-HAVING rp.L_City IS NOT NULL AND day_of_week LIKE 'S%'
-ORDER BY num_openhouses DESC, perc_with_openhouse DESC;
+With total_listings AS (
+	SELECT L_City, 
+		   COUNT(DISTINCT L_DisplayId) AS listings
+	FROM rets_property
+	GROUP BY L_City HAVING L_City IS NOT NULL
+)
+SELECT p.L_City, 
+	   DAYNAME(o.OpenHouseDate) AS day_of_week,
+	   SUM(CASE WHEN o.L_DisplayId IS NOT NULL THEN 1 ELSE 0 END) AS openhouses,
+	   AVG(l.listings) AS total_active_listings,
+	   ROUND(SUM(CASE WHEN o.L_DisplayId IS NOT NULL THEN 1 ELSE 0 END) / AVG(l.listings) * 100, 2) AS openhouse_perc_among_all
+FROM rets_property p
+LEFT JOIN total_listings l ON p.L_City = l.L_City
+LEFT JOIN rets_openhouse o ON p.L_DisplayId = o.L_DisplayId
+GROUP BY p.L_City, day_of_week
+HAVING p.L_City IS NOT NULL AND day_of_week LIKE 'S%'
+ORDER BY openhouses DESC, openhouse_perc_among_all DESC;
