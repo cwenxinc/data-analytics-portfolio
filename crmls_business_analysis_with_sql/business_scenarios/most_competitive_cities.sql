@@ -168,7 +168,7 @@ WHERE ListPrice > 0 AND ClosePrice > 0
 		FROM price_ratios
 		WHERE avg_price_ratio > 1
 	)
-GROUP BY City HAVING City IN ('Antelope', 'Mission Hills', 'Orange Cove', 'Otay Mesa', 'Stevinson')
+GROUP BY City -- HAVING City IN ('Antelope', 'Mission Hills', 'Orange Cove', 'Otay Mesa', 'Stevinson')
 ORDER BY avg_premium DESC;
 
 -- 2. Inventory tightness
@@ -251,5 +251,6 @@ ORDER BY median_dom;
 SELECT City, 
 	   ROUND(AVG(DaysOnMarket <= 7) * 100,2) AS perc_sold_within_7d
 FROM california_sold
-GROUP BY City HAVING COUNT(*) > 1 AND City IN ('Hughson', 'Mira Mesa', 'Wasco', 'Clairemont Mesa', 'Imperial', 'Planada')
+WHERE DaysOnMarket >= 0
+GROUP BY City HAVING COUNT(*) > 1 -- AND City IN ('Hughson', 'Mira Mesa', 'Wasco', 'Clairemont Mesa', 'Imperial', 'Planada')
 ORDER BY perc_sold_within_7d DESC;
