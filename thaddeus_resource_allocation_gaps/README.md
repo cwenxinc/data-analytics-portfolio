@@ -7,9 +7,9 @@ Over three months, I partnered with a fellow Operations intern to design and adm
 The **Programs Department** provides services to clients across Southern California, primarily supporting at-risk youth, single mothers, and families in need. The department consists of six roles, each contributing to different aspects of client support:
 - **Marriage and Family Therapist trainee** (hereafter referred to as "therapist"): Provides therapy sessions under the supervision of a licensed clinical practitioner
 - **Case manager**: Assesses client needs, develops personalized care plans, connects clients with community resources, and monitors follow-through
-- **Care coordinator** (i.e., psychology intern): Facilitates support groups and maintains relationships with clients and service partners
+- **Care coordinator**: Facilitates support groups and maintains relationships with clients and service partners
 - **Life coach** Provides virtual one-on-one counseling to support clients' personal and professional development
-- **Program developer & resource navigator** (hereafter referred to as "resource navigator"): A combined role focused primarily on researching, verifying, and organizing external resources to support case managers, while also developing workshops, support groups, and other client-facing programs
+- **Program developer & resource navigator** (hereafter referred to as "resource navigator"): A combined role focused on researching, verifying, and organizing external resources to support case managers, while also developing workshops, support groups, and other client-facing programs
 - **Nonprofit leadership & management** (hereafter referred to as "nonprofit leadership"): Supports the executive team in supervising department operations and ensuring alignment with organizational goals
 
 The project consisted of two components: a **staff experience survey** and **one-on-one interviews**. I led the survey design and analysis, while my project partner coordinated interview scheduling and documentation. Insights from both components were integrated to inform resource allocation recommendations.
