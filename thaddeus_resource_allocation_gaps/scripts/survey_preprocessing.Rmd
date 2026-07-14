@@ -1,0 +1,96 @@
+---
+title: "Programs Staff Experience Analysis: Data Preprocessing"
+author: "Wenxin Cui"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(ggplot2)
+```
+
+# Import Data
+
+```{r}
+# NOTE: some N/A's are not detected
+survey <- read.csv("programs_survey.csv", na = c("N/A", "n/a", "N/a", "n/A", ""))
+head(survey)
+```
+
+# Clean Data
+
+## Validate and split multi-response entries
+
+```{r}
+# validate client count
+survey_clean <- survey %>%
+  mutate(num_clients_active = ifelse(num_clients_active == "All", num_clients, num_clients_active))
+
+# remove trailing semicolons
+survey_clean <- survey_clean %>%
+  mutate(role = sub(";$","", role), 
+         area = sub(";$","", area), 
+         time_rank = sub(";$","", time_rank)) 
+
+# separate time rank into distinct columns
+survey_clean <- survey_clean %>%
+   separate(col = time_rank, 
+            into = paste0("time_", 1:6),
+            sep = ";",
+            remove = TRUE,
+            fill = "right", 
+            extra = "drop")
+
+# separate area into distinct columns
+survey_clean <- survey_clean %>%
+  separate(col = area,
+           into = paste0("area_", 1:5), 
+           sep = ";", 
+           remove = TRUE, 
+           fill = "right", 
+           extra = "drop")
+
+# validate data types
+ survey_clean <- survey_clean %>%
+   mutate(num_clients = as.numeric(num_clients), 
+          num_clients_active = as.numeric(num_clients))
+```
+
+## Convert Likert scale responses to numeric values
+
+```{r}
+survey_clean[survey_clean == "None"] <- 1
+survey_clean[survey_clean == "Little"] <- 2
+survey_clean[survey_clean == "Some"] <- 3
+survey_clean[survey_clean == "Fair"] <- 4
+survey_clean[survey_clean == "Plenty"] <- 5
+
+survey_clean[survey_clean == "Never"] <- 1
+survey_clean[survey_clean == "Rarely"] <- 2
+survey_clean[survey_clean == "Sometimes"] <- 3
+survey_clean[survey_clean == "Often"] <- 4
+survey_clean[survey_clean == "Always"] <- 5
+
+survey_clean[survey_clean == "Disagree"] <- 1
+survey_clean[survey_clean == "Somewhat Disagree"] <- 2
+survey_clean[survey_clean == "Neutral"] <- 3
+survey_clean[survey_clean == "Somewhat Agree"] <- 4
+survey_clean[survey_clean == "Agree"] <- 5
+```
+
+## Abbreviate role titles to create less cluttered visualizations
+
+```{r}
+survey_clean <- survey_clean %>%
+  mutate(role = ifelse(role == "Non-profit leadership & management member", "Non-profit leadership", role), 
+         role = ifelse(role == "Program developer & resource navigator", "Resource navigator", role))
+```
+
+# Export Analysis-Ready Data
+
+```{r}
+head(survey_clean)
+write.csv(survey_clean, "programs_survey_clean.csv", row.names = FALSE)
+```
