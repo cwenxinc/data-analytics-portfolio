@@ -1,4 +1,4 @@
-# Thaddeus Resource Allocation Project
+# Programs Staff Experience Analysis
 
 ## Directory Structure
 ```
