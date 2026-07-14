@@ -49,7 +49,7 @@ survey_clean$tenure <- factor(survey_clean$tenure,
 survey_clean %>% 
   group_by(role, tenure) %>%
   summarize(mean_satisfaction = mean(as.numeric(satisfaction_5)), 
-            .groups = "drop") |> 
+            .groups = "drop") %>% 
   ggplot(aes(x = role, y = tenure, fill = mean_satisfaction)) + 
   geom_tile() + 
   scale_fill_gradient2(
@@ -149,7 +149,7 @@ task_completion %>%
             mean = round(mean(completion_freq), 2), 
             sd = round(unbiased_sd(completion_freq), 2), 
             n_below_expectation = sum(completion_freq < 4), # frequent completion is used as the threshold
-            perc_below_expectation = round((n_below_expectation / n_staff) * 100, 2)) |> 
+            perc_below_expectation = round((n_below_expectation / n_staff) * 100, 2)) %>% 
   arrange(mean))
 
 task_completion_by_role %>%
@@ -185,7 +185,7 @@ performance <- task_completion %>%
 
 ```{r overall}
 # little correlation between overall client load and task completion
-cor(performance$num_clients, performance$completion_freq, use = "complete.obs") |> round(2)
+cor(performance$num_clients, performance$completion_freq, use = "complete.obs") %>% round(2)
 cor.test(performance$num_clients, performance$completion_freq)$p.value < 0.05
 ```
 
@@ -221,10 +221,10 @@ training <- survey_clean %>%
             mean = round(mean(adequacy, na.rm = TRUE), 2), 
             sd = round(sd(adequacy, na.rm = TRUE), 2), # not using unbiased estimate here because sample size is sufficient
             min = min(adequacy, na.rm = TRUE), 
-            max = max(adequacy, na.rm = TRUE)) |> 
+            max = max(adequacy, na.rm = TRUE)) %>% 
   arrange(mean))
 
-training_overall |> 
+training_overall %>%
   mutate(training_area = case_when(
     training_area == "training_1" ~ "Internal tools and systems", 
     training_area == "training_2" ~ "Community resources", 
@@ -234,7 +234,7 @@ training_overall |>
     training_area == "training_6" ~ "Role-specific skills", 
     training_area == "training_7" ~ "My role in the bigger picture", 
     TRUE ~ NA_character_
-  )) |> 
+  )) %>% 
   ggplot(aes(x = training_area, y = mean)) + 
   geom_bar(stat = "identity", fill = "#fee08b") + 
   geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd),
@@ -250,12 +250,12 @@ training_overall |>
 # large share of case managers reported inadequate training in internal tools
 # large share of care coordinators, therapists, and resource navigators all reported lacking training in client service (e.g. referral networks, interactions with clients, relevant policies) 
 training %>%
-  pivot_longer(cols = all_of(training_cols), names_to = "training_area", values_to = "adequacy") |> 
-  group_by(role, training_area) |> 
+  pivot_longer(cols = all_of(training_cols), names_to = "training_area", values_to = "adequacy") %>% 
+  group_by(role, training_area) %>% 
   summarize(n = sum(!is.na(adequacy)), 
             mean = round(mean(adequacy, na.rm = TRUE), 2),
             n_inadequate = sum(adequacy < 4, na.rm = TRUE), # "fair" amount of training is used as the threshold
-            perc_inadequate = round((n_inadequate / n) * 100)) |> 
+            perc_inadequate = round((n_inadequate / n) * 100)) %>%
   arrange(role, desc(perc_inadequate))
 ```
 
@@ -320,7 +320,7 @@ support %>%
             mean = round(mean(satisfaction, na.rm = TRUE), 2), 
             sd = round(sd(satisfaction, na.rm = TRUE), 2), # not using unbiased estimate here because sample size is sufficient
             min = min(satisfaction, na.rm = TRUE), 
-            max = max(satisfaction, na.rm = TRUE)) |> 
+            max = max(satisfaction, na.rm = TRUE)) %>% 
   arrange(mean)
 ```
 
@@ -330,12 +330,12 @@ support %>%
 # non-profit leadership reported the lowest support overall, particularly in communication and troubleshooting
 # therapists reported low support in troubleshooting
 support_composites <- support %>%
-  rowwise() |> 
+  rowwise() %>% 
   mutate(comm_score = mean(c_across(contains("management")), na.rm = TRUE), 
          culture_score = mean(c_across(contains("team")), na.rm = TRUE), 
          help_score = mean(c_across(contains("support")), na.rm = TRUE), 
          growth_score = mean(c_across(contains("growth")), na.rm = TRUE), 
-         overall_score = mean(c_across(all_of(support_cols)), na.rm = TRUE)) |> 
+         overall_score = mean(c_across(all_of(support_cols)), na.rm = TRUE)) %>% 
   ungroup()
 
 support_composites %>%
@@ -344,7 +344,7 @@ support_composites %>%
             mean_culture = round(mean(culture_score), 2), 
             mean_help = round(mean(help_score), 2), 
             mean_growth = round(mean(growth_score), 2), 
-            mean_overall = round(mean(overall_score), 2)) |> 
+            mean_overall = round(mean(overall_score), 2)) %>% 
   arrange(mean_overall)
 ```
 
@@ -354,7 +354,7 @@ support_composites %>%
 resources <- task_completion %>% 
   select(all_of(c("role", "tenure", "num_clients", "is_mentor", 
                   "completion_freq", training_cols, support_cols))) %>% 
-  mutate(across(all_of(training_cols), ~as.numeric(.))) |> 
+  mutate(across(all_of(training_cols), ~as.numeric(.))) %>%
   mutate(across(all_of(support_cols), ~as.numeric(.)))
 ```
 
