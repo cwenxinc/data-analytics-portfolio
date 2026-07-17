@@ -1,0 +1,208 @@
+---
+title: "Simulation Studies"
+author: "Wenxin Cui"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+```
+
+The following analyses simulate crime data to evaluate the operating characteristics of permutation tests, focusing on Type I error rate, statistical power, and the assumption of exchangeability.
+
+# Setup
+
+```{r data setup}
+crime_types <- c("COMMODIFIED SEX", "FINANCIAL", "OTHER", "PROPERTY", "VIOLENT")
+races <- c("A", "B", "H", "W")
+```
+
+```{r simulation setup}
+n_sim <- 1000
+n_sample <- 100
+n_perm_sim <- 100
+alpha <- 0.05
+```
+
+```{r test statistic setup}
+# helper function that computes the total variation distance between each pair of races
+compute_tvds <- function(data) {
+  table <- table(data$Vict.Descent, data$Crm.Type)
+  prop_table <- prop.table(table, margin = 1)
+  
+  races <- rownames(prop_table)
+  n_races <- length(races)
+  
+  n_pairs <- n_races * (n_races - 1) / 2
+  tvds <- numeric(n_pairs) # keep track of the observed statistics
+  pairs <- character(n_pairs) # keep track of the comparisons
+  
+  p <- 1
+  for (i in 1:(n_races - 1)) {
+    for (j in (i + 1):n_races) {
+      pairs[p] <- paste(races[i], "vs", races[j])
+      tvds[p] <- 0.5 * sum(abs(prop_table[i, ] - prop_table[j, ]))
+      p <- p + 1
+    }
+  }
+  
+  names(tvds) <- pairs
+  return(tvds)
+}
+```
+
+# Type I Error
+
+Estimate the Type I error rate by repeatedly simulating data under the null hypothesis of no association between race and crime exposure, performing the designed permutation tests for each simulation, and calculating the proportion of simulations that reject the null hypothesis
+
+```{r}
+# simulate data under no association
+simulate_null_data <- function(n) {
+  # assume the same distribution of crime types for all races
+  crime_probs <- c(0.2, 0.1, 0.3, 0.3, 0.1)
+  
+  # generate crimes independently of victim races
+  races_sim <- sample(races, size = n, replace = TRUE)
+  crimes_sim <- sample(crime_types, size = n, prob = crime_probs, replace = TRUE) # sample WITH replacement
+  
+  data.frame(Vict.Descent = races_sim, Crm.Type = crimes_sim)
+}
+```
+
+```{r}
+set.seed(411)
+
+# run pairwise permutation tests and track the results for each simulation
+pair_rejections <- matrix(0, nrow = n_sim, ncol = n_pairs)
+
+for (s in 1:n_sim) {
+  null_data <- simulate_null_data(n_sample)
+  t_obs_sim <- compute_tvds(null_data)
+  
+  t_null_sim <- matrix(0, nrow = n_perm, ncol = n_pairs)
+  for (i in 1:n_perm_sim) {
+    data_perm <- null_data %>%
+      mutate(Vict.Descent = sample(Vict.Descent)) # sample WITHOUT replacement
+    t_null_sim[i, ] <- compute_tvds(data_perm)
+  }
+  
+  p_vals_sim <- sapply(1:n_pairs, function(p) {
+    mean(t_null_sim[, p] >= t_obs_sim[p])
+  })
+  pair_rejections[s, ] <- p.adjust(p_vals_sim, method = "bonferroni") < alpha
+}
+```
+
+```{r}
+# compute the type 1 error rate for each pairwise test
+(pair_error_rates <- colMeans(pair_rejections))
+```
+
+# Statistical Power
+
+Estimate statistical power by repeatedly simulating crime data based on victim race (i.e. there is association between race and crime exposure), performing the designed permutation tests for each simulation, and calculating the proportion of simulations that reject the null hypothesis
+
+```{r}
+# simulate data under association
+simulate_alt_data <- function(n) {
+  # assume the distribution of crime types differs by race
+  crime_probs_by_race <- list(
+    W = c(0.3, 0.2, 0.2, 0.15, 0.15),
+    A = c(0.15, 0.3, 0.2, 0.2, 0.15),
+    H = c(0.15, 0.4, 0.1, 0.1, 0.25),
+    B = c(0.1, 0.1, 0.15, 0.15, 0.5)
+  )
+  
+  # generate crimes based on race-specific probabilities
+  races_sim <- sample(races, size = n, replace = TRUE)
+  crimes_sim <- sapply(races_sim, function(race_sim) {
+    sample(crime_types, size = 1, prob = crime_probs_by_race[[race_sim]])
+  })
+  
+  data.frame(Vict.Descent = races_sim, Crm.Type = crimes_sim)
+}
+```
+
+```{r}
+set.seed(411)
+
+# run pairwise permutation tests and track the results for each simulation
+pair_rejections <- matrix(0, nrow = n_sim, ncol = n_pairs)
+
+for (s in 1:n_sim) {
+  alt_data <- simulate_alt_data(n_sample)
+  t_obs_sim <- compute_tvds(alt_data)
+  
+  t_null_sim <- matrix(0, nrow = n_perm, ncol = n_pairs)
+  for (i in 1:n_perm_sim) {
+    data_perm <- alt_data %>%
+      mutate(Vict.Descent = sample(Vict.Descent))
+    t_null_sim[i, ] <- compute_tvds(data_perm)
+  }
+  
+  p_vals_sim <- sapply(1:n_pairs, function(p) {
+    mean(t_null_sim[, p] >= t_obs_sim[p])
+  })
+  pair_rejections[s, ] <- p.adjust(p_vals_sim, method = "bonferroni") < alpha
+}
+```
+
+```{r}
+# compute the power for each pairwise test
+(pair_powers <- colMeans(pair_rejections))
+```
+
+# Exchangeability
+
+Evaluate the effect of breaking exchangeability by simulating data where crime exposure and race are independent but crime types have dependencies, then evaluating the type I error rate
+
+```{r}
+# simulate crime records that are not necessarily interchangeable
+simulate_dependent_null_data <- function(n) {
+  races_sim <- sample(races, size = n, replace = TRUE)
+  crimes_sim <- character(n)
+  
+  # introduce "temporal" dependency to crime observations 
+  crimes_sim[1] <- sample(crime_types, size = 1)
+  for (t in 2:n) {
+    # assign a higher probability for the same crime for the next incident and equal probabilities for other crimes
+    crime_probs <- rep(0.1, length(crime_types))
+    prev_crime <- which(crime_types == crimes_sim[t - 1])
+    crime_probs[prev_crime] <- 0.6
+    crimes_sim[t] <- sample(crime_types, size = 1, prob = crime_probs)
+  }
+  
+  data.frame(Vict.Descent = races_sim, Crm.Type = crimes_sim)
+}
+```
+
+```{r}
+set.seed(412)
+
+# run pairwise permutation tests and track the results for each simulation
+pair_rejections <- matrix(0, nrow = n_sim, ncol = n_pairs)
+
+for (s in 1:n_sim) {
+  dependent_null_data <- simulate_dependent_null_data(n_sample)
+  t_obs_sim <- compute_tvds(dependent_null_data)
+  
+  t_null_sim <- matrix(0, nrow = n_perm, ncol = n_pairs)
+  for (i in 1:n_perm_sim) {
+    data_perm <- dependent_null_data %>%
+      mutate(Vict.Descent = sample(Vict.Descent))
+    t_null_sim[i, ] <- compute_tvds(data_perm)
+  }
+  
+  p_vals_sim <- sapply(1:n_pairs, function(p) {
+    mean(t_null_sim[, p] >= t_obs_sim[p])
+  })
+  pair_rejections[s, ] <- p.adjust(p_vals_sim, method = "bonferroni") < alpha
+}
+```
+
+```{r}
+# error rates do not differ considerably from the previous study where exchangeability holds
+(pair_error_rates_dependent <- colMeans(pair_rejections))
+```
