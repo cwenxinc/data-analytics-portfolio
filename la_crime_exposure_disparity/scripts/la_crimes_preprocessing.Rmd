@@ -27,6 +27,7 @@ A description for each column can be found [here](https://data.lacity.org/Public
 colSums(is.na(la_crimes))
 colMeans(is.na(la_crimes))
 ```
+
 # Clean and Transform Values
 
 ## Remove irrelevant columns
