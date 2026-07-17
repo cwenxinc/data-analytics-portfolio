@@ -1,0 +1,237 @@
+---
+title: 'LA Crime Landscape: Analyses and Findings'
+author: "Wenxin Cui"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+library(dplyr)
+library(scales)
+library(lubridate)
+library(ggmap)
+library(tidyverse)
+```
+
+```{r}
+la_crimes_clean = read.csv('la_crimes_clean.csv')
+dim(la_crimes_clean)
+```
+
+# Exploratory Visualizations
+
+Begin the analysis by visually exploring how crime exposure differs across races.
+
+## Contingency tables
+
+```{r}
+# the number of crimes experienced by each race across crime types
+la_crimes_clean %>%
+  group_by(Vict.Descent, Crm.Type) %>% 
+  summarize(n = n()) %>%
+  pivot_wider(names_from = Crm.Type, 
+              values_from = n)
+```
+
+```{r}
+# share of crimes experienced by each race across crime types
+la_crimes_clean %>%
+  group_by(Vict.Descent, Crm.Type) %>% 
+  summarize(n = n(), .groups = 'drop_last') %>%
+  mutate(prop = prop.table(n)) %>%
+  select(Crm.Type, Vict.Descent, prop) %>%
+  pivot_wider(names_from = Crm.Type, 
+              values_from = prop)
+```
+
+## Line plots
+
+```{r}
+# each racial group's share of victims by year from 2020 to 2024
+la_crimes_clean %>%
+  group_by(DATE.OCC.Year, Vict.Descent) %>%
+  summarize(n = n(), .groups = 'drop_last') %>%
+  mutate(prop = prop.table(n)) %>%
+  ggplot(aes(x = DATE.OCC.Year, y = prop, color = Vict.Descent)) + 
+  geom_line() + 
+  scale_y_continuous(labels = percent_format()) + 
+  labs(x = "Year", y = "", color = "Victim Race") + 
+  theme_minimal()
+```
+
+```{r}
+# each racial group's share of victims by hour of day
+la_crimes_clean %>%
+  mutate(TIME.OCC.Hour = TIME.OCC %/% 100) %>%
+  group_by(TIME.OCC.Hour, Vict.Descent) %>%
+  summarize(n = n(), .groups = 'drop_last') %>%
+  mutate(prop = prop.table(n)) %>%
+  ggplot(aes(x = TIME.OCC.Hour, y = prop, color = Vict.Descent)) + 
+  geom_line() + 
+  scale_x_continuous(breaks = 0:23) + 
+  scale_y_continuous(labels = percent_format()) + 
+  labs(x = "Hour of Day", y = "", color = "Victim Race") + 
+  theme_minimal()
+```
+
+## Maps
+
+```{r}
+register_stadiamaps("3e417267-0b88-4285-bd89-531d4c11168c", write = FALSE)
+```
+
+```{r}
+# geographic distribution of violent crimes by race and severity
+la_crimes_violent <- la_crimes_clean %>% filter(Crm.Type == "VIOLENT")
+bbox <- make_bbox(LON, LAT, data = la_crimes_violent)
+map <- get_stadiamap(bbox = bbox, maptype = "stamen_toner_lite", zoom = 11)
+ggmap(map) + 
+  geom_point(aes(LON, LAT, color = Vict.Descent), 
+             data = la_crimes_violent, 
+             alpha = 0.4, size = 0.1) + 
+  labs(x = "Longitude", y = "Latitude", color = "Victim Race") + 
+  facet_wrap(~ Part.1.2, nrow = 1, 
+             labeller = labeller(Part.1.2 = c("1" = "Severe", "2" = "Less Severe"))) +
+  theme_minimal()
+```
+
+```{r}
+# geographic distribution of property crimes by race and severity
+la_crimes_property <- la_crimes_clean %>% filter(Crm.Type == "PROPERTY")
+bbox <- make_bbox(LON, LAT, data = la_crimes_property)
+map <- get_stadiamap(bbox = bbox, maptype = "stamen_toner_lite", zoom = 11)
+ggmap(map) + 
+  geom_point(aes(LON, LAT, color = Vict.Descent), 
+             data = la_crimes_property, 
+             alpha = 0.4, size = 0.1) + 
+  labs(x = "Longitude", y = "Latitude", color = "Victim Race") + 
+  facet_wrap(~ Part.1.2, nrow = 1, 
+             labeller = labeller(Part.1.2 = c("1" = "Severe", "2" = "Less Severe"))) + 
+  theme_minimal()
+```
+
+```{r}
+# geographic distribution of financial crimes by race and severity
+la_crimes_financial <- la_crimes_clean %>% filter(Crm.Type == "FINANCIAL")
+bbox <- make_bbox(LON, LAT, data = la_crimes_financial)
+map <- get_stadiamap(bbox = bbox, maptype = "stamen_toner_lite", zoom = 11)
+ggmap(map) + 
+  geom_point(aes(LON, LAT, color = Vict.Descent), 
+             data = la_crimes_financial, 
+             alpha = 0.4, size = 0.1) + 
+  labs(x = "Longitude", y = "Latitude", color = "Victim Race") + 
+  facet_wrap(~ Part.1.2, nrow = 1, 
+             labeller = labeller(Part.1.2 = c("1" = "Severe", "2" = "Less Severe"))) + 
+  theme_minimal()
+```
+
+```{r}
+# geographic distribution of human trafficking crimes by race and severity
+la_crimes_trafficking <- la_crimes_clean %>% filter(Crm.Type == "COMMODIFIED SEX")
+bbox <- make_bbox(LON, LAT, data = la_crimes_trafficking)
+map <- get_stadiamap(bbox = bbox, maptype = "stamen_toner_lite", zoom = 11)
+ggmap(map) + 
+  geom_point(aes(LON, LAT, color = Vict.Descent), 
+             data = la_crimes_trafficking, 
+             alpha = 0.4, size = 0.1) + 
+  labs(x = "Longitude", y = "Latitude", color = "Victim Race") + 
+  facet_wrap(~ Part.1.2, nrow = 1, 
+             labeller = labeller(Part.1.2 = c("1" = "Severe", "2" = "Less Severe"))) + 
+  theme_minimal()
+```
+
+# Pairwise Permutation Tests
+
+Then conduct a series of two-sample permutation tests *using total variation distance (TVD) as the test statistic* to assess the association between race and crime exposure.
+
+```{r helper}
+# helper function that computes the total variation distance between each pair of races
+compute_tvds <- function(data) {
+  table <- table(data$Vict.Descent, data$Crm.Type)
+  prop_table <- prop.table(table, margin = 1)
+  
+  races <- rownames(prop_table)
+  n_races <- length(races)
+  
+  n_pairs <- n_races * (n_races - 1) / 2
+  tvds <- numeric(n_pairs) # keep track of the observed statistics
+  pairs <- character(n_pairs) # keep track of the comparisons
+  
+  p <- 1
+  for (i in 1:(n_races - 1)) {
+    for (j in (i + 1):n_races) {
+      pairs[p] <- paste(races[i], "vs", races[j])
+      tvds[p] <- 0.5 * sum(abs(prop_table[i, ] - prop_table[j, ]))
+      p <- p + 1
+    }
+  }
+  
+  names(tvds) <- pairs
+  return(tvds)
+}
+```
+
+```{r}
+# shuffle the race labels and recompute the total variation distances 
+# 1000 times to get a null distribution for each pair of races
+n_perm <- 1000
+n_races <- length(unique(la_crimes_clean$Vict.Descent))
+n_pairs <- choose(n = n_races, k = 2)
+t_null <- matrix(0, nrow = n_perm, ncol = n_pairs)
+
+for (i in 1:n_perm) {
+  la_crimes_perm <- la_crimes_clean %>%
+    mutate(Vict.Descent = sample(Vict.Descent)) # sample without replacement
+  t_null[i, ] <- compute_tvds(la_crimes_perm)
+}
+
+# compute the observed statistic for each pair of races
+t_obs <- compute_tvds(la_crimes_clean)
+colnames(t_null) <- names(t_obs)
+```
+
+```{r}
+# compute the p-value for each pairwise test, using Bonferroni correction to account for multiple comparisons
+alpha <- 0.05
+p_vals <- sapply(1:n_pairs, function(p) {
+  mean(t_null[, p] >= t_obs[p])
+})
+(p_vals_corrected <- p.adjust(p_vals, method = "bonferroni"))
+names(p_vals_corrected) <- names(t_obs)
+p_vals_corrected < alpha
+```
+
+## Visualize test results
+
+```{r helper}
+# helper function that visualizes the observed statistic against the null distribution for each pair of races
+plot_statistic <- function(pair_i) {
+  t_null_i <- t_null[, pair_i]
+  t_obs_i <- unname(t_obs[pair_i])
+  data.frame(t_null_i) %>%
+    ggplot(aes(t_null_i)) + 
+    geom_density(color = "black") + 
+    geom_vline(xintercept = t_obs_i, color = "orange") + 
+    labs(subtitle = names(t_obs[pair_i]), 
+         x = "TVD", y = "Density") + 
+    theme_minimal() + # place global theme here to avoid overwriting theme adjustments
+    theme(plot.subtitle = element_text(hjust = 0.5))
+}
+```
+
+```{r}
+library(patchwork)
+
+p1 <- plot_statistic(1)
+p2 <- plot_statistic(2)
+p3 <- plot_statistic(3)
+p4 <- plot_statistic(4)
+p5 <- plot_statistic(5)
+p6 <- plot_statistic(6)
+
+# show the plots in a 3x2 grid
+(p1 + p2 + p3 + p4 + p5 + p6) + 
+  patchwork::plot_layout(nrow = 3, ncol = 2, byrow = TRUE)
+```
