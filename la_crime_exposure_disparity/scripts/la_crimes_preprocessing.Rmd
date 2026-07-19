@@ -1,0 +1,123 @@
+---
+title: "LA Crime Landscape: Data Preprocessing"
+author: "Wenxin Cui"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(lubridate)
+library(ggmap)
+```
+
+```{r}
+la_crimes <- read.csv("Crime_Data_from_2020_to_2024.csv")
+```
+
+# Profile Nulls
+
+A description for each column can be found [here](https://data.lacity.org/Public-Safety/Crime-Data-from-2020-to-2024/2nrs-mtv8/about_data)
+
+```{r}
+# no nulls across columns of interest
+colSums(is.na(la_crimes))
+colMeans(is.na(la_crimes))
+```
+
+# Clean and Transform Values
+
+## Remove irrelevant columns
+
+```{r}
+la_crimes_clean <- la_crimes %>%
+  select(-c(Date.Rptd, AREA, Rpt.Dist.No, Crm.Cd, Mocodes, 
+            Premis.Cd, Premis.Desc, Weapon.Used.Cd, Weapon.Desc, 
+            Crm.Cd.1, Crm.Cd.2, Crm.Cd.3, Crm.Cd.4, 
+            Status, Status.Desc, LOCATION, Cross.Street))
+# no more nulls
+colSums(is.na(la_crimes_clean))
+```
+
+## Validate numeric values
+
+```{r}
+# ensure categorical columns are not treated as numeric
+la_crimes_clean <- la_crimes_clean %>%
+  mutate(DR_NO = as.character(DR_NO),
+         Part.1.2 = as.factor(Part.1.2),
+         Vict.Sex = as.factor(Vict.Sex), 
+         Vict.Descent = as.factor(Vict.Descent))
+
+# assess the distribution of numeric columns
+la_crimes_clean %>%
+  summarize(across(where(is.numeric), 
+                   list(
+                     mean = ~ mean(.),
+                     sd = ~ sd(.), 
+                     max = ~ max(.),
+                     min = ~ min(.)
+                   ))) %>%
+  pivot_longer(everything(), 
+               names_to = c('variable', '.value'), 
+               names_pattern = "(.*)_(mean|min|max|sd)$")
+
+# remove incidents where victim age is negative and geographical information is incomplete
+la_crimes_clean <- la_crimes_clean %>%
+  filter(Vict.Age >= 0, LAT != 0, LON != 0)
+```
+
+## Extract year and month from crime date
+
+```{r}
+la_crimes_clean <- la_crimes_clean %>%
+  mutate(DATE.OCC.Month = month(ymd_hms(DATE.OCC)), 
+         DATE.OCC.Year = year(ymd_hms(DATE.OCC)))
+
+la_crimes_clean %>%
+  summarize(month_range = paste(range(DATE.OCC.Month), collapse = "–"), 
+            year_range = paste(range(DATE.OCC.Year), collapse = "–"))
+# ensure the conversion was successful
+colSums(is.na(la_crimes_clean[c('DATE.OCC.Month', 'DATE.OCC.Year')]))
+```
+
+## Aggregate crime victims and types
+
+```{r}
+# focus on crimes that have actually occurred
+la_crimes_clean <- la_crimes_clean %>% 
+  filter(!str_detect(Crm.Cd.Desc, fixed("ATTEMPT", ignore_case = TRUE)))
+```
+
+```{r}
+# aggregate victims with Asian descent and focus on Asians, Blacks, Whites, and Hispanics
+asian_descent <- c("A", "C", "D", "F", "J", "K", "L", "V", "Z")
+la_crimes_clean <- la_crimes_clean %>%  
+  mutate(Vict.Descent = if_else(Vict.Descent %in% asian_descent, "A", Vict.Descent)) %>% 
+  filter(Vict.Descent %in% c("A", "B", "H", "W")) 
+
+# aggregate crimes into five broad categories
+crime_types_full <- unique(la_crimes_clean$Crm.Cd.Desc)
+violent <- c(2, 4, 6, 10, 14, 17, 23, 26, 28, 29, 34, 36, 38, 50, 65, 67, 
+             68, 70, 71, 76, 83, 86, 91, 95, 107, 108, 111, 119, 120)
+financial <- c(1, 46, 48, 51, 94, 97, 117)
+property <- c(5, 7, 9, 12, 15, 22, 31, 33, 37, 54, 56, 59, 63, 66, 
+              69, 75, 77, 84, 85, 92, 100, 101, 104, 105, 109, 113, 118)
+human_trafficking <- c(40, 41, 58, 78, 96)
+la_crimes_clean <- la_crimes_clean %>% 
+  mutate(Crm.Type = case_when(Crm.Cd.Desc %in% crime_types_full[violent] ~ "VIOLENT", 
+                              Crm.Cd.Desc %in% crime_types_full[financial] ~ "FINANCIAL",
+                              Crm.Cd.Desc %in% crime_types_full[property] ~ "PROPERTY", 
+                              Crm.Cd.Desc %in% crime_types_full[human_trafficking] ~ "COMMODIFIED SEX", 
+                              TRUE ~ "OTHER"
+  ))
+```
+
+# Export Analysis-Ready Data
+
+```{r}
+# 66% of original data retained for analysis
+dim(la_crimes) # 1004894 records in total
+dim(la_crimes_clean) # 660130 records retained
+write.csv(la_crimes_clean, "la_crimes_clean.csv", row.names = FALSE)
+```
