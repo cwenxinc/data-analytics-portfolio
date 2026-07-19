@@ -149,6 +149,7 @@ ggmap(map) +
 
 ```{r}
 # geographic distribution of crime types by race
+# the spread of observations is not substantially different between races, suggesting that exchangeability holds
 bbox <- make_bbox(LON, LAT, data = la_crimes_clean)
 map <- get_stadiamap(bbox = bbox, maptype = "stamen_toner_lite", zoom = 11)
 ggmap(map) + 
