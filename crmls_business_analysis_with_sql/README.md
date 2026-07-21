@@ -2,7 +2,7 @@
 This project analyzes California MLS real estate data across three ***MySQL*** tables using ***DBeaver*** to answer key business questions about the California housing market.
 
 ## Directory Structure
-Each SQL file applies specific SQL concepts to a practical business scenario. The final SQL script produces an executive summary of market conditions across California cities, including a composite competitiveness score and market classification (competitive, balanced, or buyer opportunity) for each city. Each file begins with a summary of the business question and key findings.
+Each SQL file applies specific SQL concepts to a practical business scenario. The final SQL script produces an executive summary of market conditions across California cities, including a composite competitiveness score and a market classification (competitive, balanced, or buyer opportunity) for each city. Each file begins with a summary of the business question and key findings.
 ```
 schema_exploration.sql                    - Schema discovery and data quality checks
 business_scenarios
@@ -27,7 +27,7 @@ README.md
 ## Database
 This analysis integrates data from three tables in the *rets* database:
 - rets_property: active listings
-- rets_openhouse: open house schedules and details, linked to rets_property via the unique listing identifier
+- rets_openhouse: open house schedules and details, linked to rets_property via *L_DisplayId*
 - california_sold: historical sales
 
 ## Tools Used
