@@ -9,7 +9,7 @@ Findings from exploratory analysis:
 - Hispanic victims represented the largest share of victims throughout the day, followed by White, Black, and Asian victims. However, the hourly composition of victimization varied across racial groups; for example, the share of Hispanic victims declined around noon, whereas the share of White victims peaked during the same period.
 - Property crimes accounted for a similar share of victimization across racial groups. In contrast, Asian victims had a relatively larger share of violent crimes, whereas Hispanic victims had a relatively larger share of sexual commodification offenses.
 
-Findings from pairwise permutation tests:
+Findings from pairwise permutation tests:\
 *Note: The testing framework is described in detail in the Methods section of the paper*
 - Across all racial group comparisons, observed total variation distances fell in the extreme tails of their corresponding null distributions, with all Bonferroni-adjusted p-values virtually equal to 0. These results provide strong evidence that crime type distributions differed across racial groups.
   - However, the magnitude of these differences varied across pairwise comparisons, with some pairs of racial groups exhibiting greater divergence in crime type distributions than others.
@@ -20,7 +20,7 @@ Findings from pairwise permutation tests:
 scripts
 ├── la_crimes_analysis.Rmd                  - Visually explores and then evaluates differences in victimization patterns using permutation tests
 ├── la_crimes_preprocessing.Rmd             - Loads, cleans and aggregates crime records
-└── simulation_studies.Rmd                  - Assesses the robustess of permutation tests
-racial_disparities_in_victimization.pdf     - Paper that synthesizes methods and findings
+└── simulation_studies.Rmd                  - Assesses the robustness of the permutation tests
+racial_disparities_in_victimization.pdf     - Synthesizes methods and findings
 README.md
 ```
