@@ -17,10 +17,10 @@ Findings from pairwise permutation tests:
 
 ## Directory Structure
 ```
-racial_disparities_in_victimization.pdf     - Paper that synthesizes methods and findings
 scripts
 ├── la_crimes_analysis.Rmd                  - Visually explores and then evaluates differences in victimization patterns using permutation tests
 ├── la_crimes_preprocessing.Rmd             - Loads, cleans and aggregates crime records
 └── simulation_studies.Rmd                  - Assesses the robustess of permutation tests
+racial_disparities_in_victimization.pdf     - Paper that synthesizes methods and findings
 README.md
 ```
