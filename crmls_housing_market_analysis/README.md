@@ -2,9 +2,9 @@
 This project analyzes 600,000+ California MLS real estate listings from January 2024 to April 2026 using ***Pandas*** and ***Tableau*** to uncover trends in pricing, supply, sales volume, and brokerage performance across cities and property types.
 
 ## Deliverables
-**Market analysis** features three interactive dashboards covering sales trends, supply and demand comparison, and the relationship between sales and mortgage rates. The dashboards are linked [here](https://public.tableau.com/views/market_analysis_17794744134230/SalesTrends?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link), and PDF snapshots for a selected city and property type are included in this directory.
+**Market analysis** features three interactive dashboards covering sales trends, supply and demand comparison, and mortgage rates and sales comparison. The dashboards are linked [here](https://public.tableau.com/views/market_analysis_17794744134230/SalesTrends?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link), and PDF snapshots for a selected city and property type are included in this directory.
 
-**Competitive analysis** features four interactive dashboards covering top-performing agents by sales, top-performing brokerages by sales, brokerage performance in sales speed and pricing, and sales distribution. The dashboards are linked [here](https://public.tableau.com/views/competitive_analysis_17794803740340/TopAgents?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link), and PDF snapshots for a selected city and/or property type are included in this directory.
+**Competitive analysis** features four interactive dashboards covering top-performing agents by sales, top-performing brokerages by sales, brokerage performance in sales speed and sale-to-list pricing, and sales distribution. The dashboards are linked [here](https://public.tableau.com/views/competitive_analysis_17794803740340/TopAgents?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link), and PDF snapshots for a selected city and/or property type are included in this directory.
 
 ## Key Findings
 The following findings focus on the single-family housing market in Fontana, California:
@@ -14,7 +14,7 @@ The following findings focus on the single-family housing market in Fontana, Cal
 - RE/MAX TIME REALTY dominated market share, while smaller brokerages remained competitive in sales efficiency and pricing power.
 
 Other findings:
-- Single-family home sales are concentrated in inland California, while coastal markets achieve the highest sale prices.
+- Single-family home sales were concentrated in inland California, while coastal markets achieved the highest sale prices.
 - Mortgage rates and sales activity showed an inverse relationship: rising rates in late 2024 coincided with weaker sales, while falling rates in 2025 coincided with a sustained increase in sales. Although mortgage rates may influence affordability and buyer behavior, additional factors should be considered when interpreting these trends.
 
 ## Directory Structure
