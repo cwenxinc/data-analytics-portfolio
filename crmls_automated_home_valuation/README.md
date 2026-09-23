@@ -5,28 +5,39 @@ The project uses monthly sales records from the California Regional Multiple Lis
 
 ## Preprocessing
 Data preprocessing is performed in two stages:
-1. Data cleaning: Records are standardized, deduplicated, and filtered for logically invalid records. Features that could introduce target leakage by approximating sales price or reflecting pricing strategy are also removed.
-2. Data transformation: Records are first split chronologically into training, validation, and test sets. Targeted transformations—including imputation, scaling, encoding, and outlier removal—are then applied. Transformation rules, such as outlier thresholds and imputation values, are learned from the training set and applied unchanged to the validation and test sets to prevent future information from leaking into model development.
+- Data cleaning: Records are standardized, deduplicated, and filtered for logically invalid records. Features that could introduce target leakage by approximating sales price or reflecting pricing strategy are also removed.
+- Data transformation: Records are first split chronologically into training, validation, and test sets. Targeted transformations—including imputation, scaling, encoding, and outlier removal—are then applied. Transformation rules, such as outlier thresholds and imputation values, are learned from the training set and applied unchanged to the validation and test sets.
 
-For details, see 02_data_cleaning.ipynb and 03_data_transformation.ipynb under scripts/. The transformation notebook imports helper functions from preprocess.py under utilities/ to streamline training-learned transformations.
+For details, see `02_data_cleaning.ipynb` and `03_data_transformation.ipynb` under `scripts/`. The `03_data_transformation.ipynb` notebook imports helper functions from `preprocess.py` under `utilities/` to streamline training-learned transformations.
 
-## Iteration Timeline
-The project uses a chronological data split to prevent future market conditions from leaking into model development. June 2026 is reserved for testing, May 2026 for validation, and January 2025 through April 2026 (16 months) for training. The training window length is tuned during model development.
+## Modeling
+A chronological split is used instead of a random split to prevent future information from leaking into model development. June 2026 is reserved for testing, May 2026 for validation, and January 2025 through April 2026 for training. The training window is tuned and extended to 16 months based on validation performance.
 
-The feature set is progressively reduced to 16 features across four categories:
-- Property location: county, city, school district
+The feature set is reduced to 16 features across four categories:
+- Property location: county, city, school district, MLS area major, postal code
 - Construction history: property age
-- Layout: living area, bedrooms, bathrooms, lot size
-- Amenities: garage, pool, fireplace, view
+- Layout: living area, bedrooms, bathrooms, stories, lot size
+- Amenities: parking space, garage, pool, fireplace, view
 
 A sequence of machine learning models is developed and tuned using validation MdAPE as the primary metric, with MAPE, R<sup>2</sup>, and other metrics reported for additional context. The two top-performing models, both achieving sub-8% validation MdAPE, are evaluated on the test set for predictive accuracy and then assessed through rolling-origin backtesting for predictive stability. 
 
 ## Model Performance
-The table below summarizes the performance of the two top-performing models from validation on the test set. Both models achieve consistent predictive performance on the test set, though accuracy declines for home sold at higher price quartiles. Both models also achieve stable performance across rolling backtests, with XGBoost achieving a mean MdAPE of 7.67% with 0.15% standard deviation and LightGBM achieving a mean MdAPE of 7.77% with 0.10% standard deviation.
+Both models show consistent predictive accuracy on the test set, with performance declining for higher-priced homes.
 
 | Model | MdAPE | MAPE | MAE | RMSE | R<sup>2</sup> |
 | --- | --- | --- | --- | --- | --- |
 | XGBoost | 7.62% | 11.32% | $153,304 | $300,825 | 0.8965 | 
 | LightGBM | 7.87% | 11.07% | $149,700 | $290,822 | 0.9033 |
+
+Table 1: Test-set performance of the two top-performing models from validation.
+
+| Model | Q1 | Q2 | Q3 | Q4 |
+| --- | --- | --- | --- | --- |
+| XGBoost | 6.59% | 5.87% | 8.14% | 10.97% |
+| LightGBM | 6.75% | 6.27% | 8.31% | 10.67% |
+
+Table 2: Test-set MdAPE of the two top-performing models by sales price quartile.
+
+Rolling-origin backtests also show stable performance. XGBoost achieves a mean MdAPE of 7.67% (SD: 0.15%), while LightGBM achieves 7.77% (SD: 0.10%).
 
 ## Directory Structure
