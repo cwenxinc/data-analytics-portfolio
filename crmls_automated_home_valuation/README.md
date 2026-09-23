@@ -8,9 +8,9 @@ Data preprocessing is performed in two stages:
 - Data cleaning: Records are standardized, deduplicated, and filtered for logically invalid records. Features that could introduce target leakage by approximating sales price or reflecting pricing strategy are also removed.
 - Data transformation: Records are first split chronologically into training, validation, and test sets. Targeted transformations—including imputation, scaling, encoding, and outlier removal—are then applied. Transformation rules, such as outlier thresholds and imputation values, are learned from the training set and applied unchanged to the validation and test sets.
 
-For details, see `02_data_cleaning.ipynb` and `03_data_transformation.ipynb` under `scripts/`. The `03_data_transformation.ipynb` notebook imports helper functions from `preprocess.py` under `utilities/` to streamline training-learned transformations.
+For details, see `02_data_cleaning.ipynb` and `03_data_transformation.ipynb` under `scripts/`. The `03_data_transformation.ipynb` notebook imports helper functions from `preprocess.py` under `utilities/` to implement training-learned transformations.
 
-## Modeling
+## Model Development
 A chronological split is used instead of a random split to prevent future information from leaking into model development. June 2026 is reserved for testing, May 2026 for validation, and January 2025 through April 2026 for training. The training window is tuned and extended to 16 months based on validation performance.
 
 The feature set is reduced to 16 features across four categories:
@@ -58,6 +58,6 @@ scripts
 utilities
 ├── merge.py                       - Merges monthly sales records from Jan 2024 to June 2026
 └── preprocess.py                  - Creates helper functions to help streamline and scale training-based preprocessing
-presentation.pdf                   - Synthesizes model development and results
+presentation.pdf                   - Summarizes model development timeline and performance
 README.md
 ```
