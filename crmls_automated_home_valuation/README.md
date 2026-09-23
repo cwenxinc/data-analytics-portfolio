@@ -1,4 +1,4 @@
-# Single-Family Home Valuation
+# CRMLS Single-Family Home Valuation
 This project develops automated valuation models (AVMs) using ***Scikit-learn*** to predict California single-family home sales prices and deploys the final model with ***Streamlit*** for property valuation. Access the deployed app here[hyperlink to be included].
 
 The project uses monthly sales records from the California Regional Multiple Listing Service (CRMLS) from January 2024 through June 2026, totaling 663,761 records. After filtering for single-family homes according to the project charter, 334,704 records remain for analysis and model development.
