@@ -24,6 +24,8 @@ A sequence of machine learning models is developed and tuned using validation Md
 ## Model Performance
 Both models show consistent predictive accuracy on the test set, with performance declining for higher-priced homes.
 
+<div align="center">
+
 | Model | MdAPE | MAPE | MAE | RMSE | R<sup>2</sup> |
 | --- | --- | --- | --- | --- | --- |
 | XGBoost | 7.62% | 11.32% | $153,304 | $300,825 | 0.8965 | 
@@ -31,12 +33,18 @@ Both models show consistent predictive accuracy on the test set, with performanc
 
 <sub>Table 1: Test-set performance of the two top-performing models from validation.</sub>
 
+</div>
+
+<div align="center">
+
 | Model | Q1 | Q2 | Q3 | Q4 |
 | --- | --- | --- | --- | --- |
 | XGBoost | 6.59% | 5.87% | 8.14% | 10.97% |
 | LightGBM | 6.75% | 6.27% | 8.31% | 10.67% |
 
 <sub>Table 2: Test-set MdAPE of the two top-performing models by sales price quartile.</sub>
+
+</div>
 
 Rolling-origin backtests also show stable performance. XGBoost achieves a mean MdAPE of 7.67% (SD: 0.15%), while LightGBM achieves 7.78% (SD: 0.10%).
 
@@ -50,5 +58,6 @@ scripts
 utilities
 ├── merge.py                       - Merges monthly sales records from Jan 2024 to June 2026
 └── preprocess.py                  - Creates helper functions to help streamline and scale training-based preprocessing
+presentation.pdf                   - Synthesizes model development and results
 README.md
 ```
