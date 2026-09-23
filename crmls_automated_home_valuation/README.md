@@ -8,7 +8,7 @@ Data preprocessing is performed in two stages:
 - Data cleaning: Records are standardized, deduplicated, and filtered for logically invalid records. Features that could introduce target leakage by approximating sales price or reflecting pricing strategy are also removed.
 - Data transformation: Records are first split chronologically into training, validation, and test sets. Targeted transformations—including imputation, scaling, encoding, and outlier removal—are then applied. Transformation rules, such as outlier thresholds and imputation values, are learned from the training set and applied unchanged to the validation and test sets.
 
-For details, see `02_data_cleaning.ipynb` and `03_data_transformation.ipynb` under `scripts/`. The `03_data_transformation.ipynb` notebook imports helper functions from `preprocess.py` under `utilities/` to implement training-learned transformations.
+For details, see `02_data_cleaning.ipynb` and `03_data_transformation.ipynb` under `scripts/`. Some transformations are implemented separately in `preprocess.py` under `utilities/` to help streamline the preprocessing pipeline.
 
 ## Model Development
 A chronological split is used instead of a random split to prevent future information from leaking into model development. June 2026 is reserved for testing, May 2026 for validation, and January 2025 through April 2026 for training. The training window is tuned and extended to 16 months based on validation performance.
@@ -19,7 +19,7 @@ The feature set is reduced to 16 features across four categories:
 - Layout: living area, bedrooms, bathrooms, stories, lot size
 - Amenities: parking space, garage, pool, fireplace, view
 
-A sequence of machine learning models is developed and tuned using validation MdAPE as the primary metric, with MAPE, R<sup>2</sup>, and other metrics reported for additional context. The two top-performing models, both achieving sub-8% validation MdAPE, are evaluated on the test set for predictive accuracy and then assessed through rolling-origin backtesting for predictive stability. 
+A sequence of machine learning models is developed and tuned using validation MdAPE as the primary metric, with MAPE, R<sup>2</sup>, and other metrics reported for additional context. The two top-performing models, both achieving sub-8% validation MdAPE, are evaluated on the test set for predictive accuracy and then assessed through rolling-origin backtesting for predictive stability. For details, see `04_modeling.ipynb` under `scripts/`.
 
 ## Model Performance
 Both models show consistent predictive accuracy on the test set, with performance declining for higher-priced homes.
