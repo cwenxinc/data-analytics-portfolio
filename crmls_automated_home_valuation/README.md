@@ -1,5 +1,5 @@
 # Single-Family Home Valuation
-This project develops automated valuation models (AVMs) using ***Scikit-learn*** to predict California single-family home sales prices and deploys the final model with ***Streamlit*** for property valuation.
+This project develops automated valuation models (AVMs) using ***Scikit-learn*** to predict California single-family home sales prices and deploys the final model with ***Streamlit*** for property valuation. Access the deployed app here[hyperlink to be included].
 
 The project uses monthly sales records from the California Regional Multiple Listing Service (CRMLS) from January 2024 through June 2026, totaling 663,761 records. After filtering for single-family homes according to the project charter, 334,704 records remain for analysis and model development.
 
@@ -29,15 +29,26 @@ Both models show consistent predictive accuracy on the test set, with performanc
 | XGBoost | 7.62% | 11.32% | $153,304 | $300,825 | 0.8965 | 
 | LightGBM | 7.87% | 11.07% | $149,700 | $290,822 | 0.9033 |
 
-Table 1: Test-set performance of the two top-performing models from validation.
+<sub>Table 1: Test-set performance of the two top-performing models from validation.</sub>
 
 | Model | Q1 | Q2 | Q3 | Q4 |
 | --- | --- | --- | --- | --- |
 | XGBoost | 6.59% | 5.87% | 8.14% | 10.97% |
 | LightGBM | 6.75% | 6.27% | 8.31% | 10.67% |
 
-Table 2: Test-set MdAPE of the two top-performing models by sales price quartile.
+<sub>Table 2: Test-set MdAPE of the two top-performing models by sales price quartile.</sub>
 
-Rolling-origin backtests also show stable performance. XGBoost achieves a mean MdAPE of 7.67% (SD: 0.15%), while LightGBM achieves 7.77% (SD: 0.10%).
+Rolling-origin backtests also show stable performance. XGBoost achieves a mean MdAPE of 7.67% (SD: 0.15%), while LightGBM achieves 7.78% (SD: 0.10%).
 
 ## Directory Structure
+```
+scripts
+├── 01_exploration.ipynb           - Explores target and feature distributions
+├── 02_data_cleaning.ipynb         - Validates merged sales records
+├── 03_data_transformation.ipynb   - Splits merged data chronologically and applies training-based preprocessing
+└── 04_modeling.ipynb              - Trains and evaluates machine learning models
+utilities
+├── merge.py                       - Merges monthly sales records from Jan 2024 to June 2026
+└── preprocess.py                  - Creates helper functions to help streamline and scale training-based preprocessing
+README.md
+```
