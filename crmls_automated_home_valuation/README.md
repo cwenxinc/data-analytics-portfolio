@@ -1,5 +1,5 @@
 # CRMLS Single-Family Home Valuation
-This project develops automated valuation models (AVMs) using ***Scikit-learn*** for single-family homes in California and deploys the final model with ***Streamlit*** for company use. Access the deployed app [here](https://ca-single-family-home-value-estimator.streamlit.app/).
+This project develops automated valuation models (AVMs) using ***Scikit-learn*** to estimate the sales prices of single-family homes in California and deploys the final model with ***Streamlit*** for company use. Access the deployed app [here](https://ca-single-family-home-value-estimator.streamlit.app/).
 
 The project uses monthly sales records from the California Regional Multiple Listing Service (CRMLS) from January 2024 through June 2026, totaling 663,761 records. After filtering for single-family homes according to the project charter, 334,704 records remain for model development.
 
@@ -19,7 +19,7 @@ The feature set is reduced to 15 features across four categories:
 - Layout: living area, bedrooms, bathrooms, stories, lot size
 - Amenities: parking space, garage, pool, fireplace, view
 
-A sequence of machine learning models is trained and tuned using MdAPE, with MAPE, R<sup>2</sup>, and other metrics reported for reference. The two top-performing models, both achieving sub-8% validation MdAPE, are evaluated on the test set for predictive accuracy and then assessed through rolling-origin backtesting for predictive stability. For details, see `04_modeling.ipynb` under `scripts/`.
+A sequence of machine learning models is trained and tuned primarily using MdAPE, with MAPE, R<sup>2</sup>, and other metrics reported for reference. The two top-performing models, both achieving sub-8% validation MdAPE, are evaluated on the test set for predictive accuracy and then assessed through rolling-origin backtesting for predictive stability. For details, see `04_modeling.ipynb` under `scripts/`.
 
 ## Model Performance
 Both models show consistent predictive accuracy on the test set, with performance declining for higher-priced homes.
@@ -46,7 +46,7 @@ Both models show consistent predictive accuracy on the test set, with performanc
 
 </div>
 
-Rolling-origin backtests also show stable performance. XGBoost achieves a mean MdAPE of 7.67% (SD: 0.16%), while LightGBM achieves 7.83% (SD: 0.11%).
+Rolling-origin backtests also show stable performance. XGBoost achieves a mean MdAPE of 7.67% (SD: 0.16%), while LightGBM achieves 7.83% (SD: 0.11%). LightGBM is ultimately selected for deployment over XGBoost due to its superior computational efficiency and predictive stability.
 
 ## Directory Structure
 ```
