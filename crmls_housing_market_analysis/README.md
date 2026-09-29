@@ -19,12 +19,12 @@ Other findings:
 
 ## Directory Structure
 ```
-scripts
+scripts/
 ├── listed_aggregate.py         - Loads and combines monthly listings
 ├── listed_preprocess.py        - Profiles data quality and cleans listing records
 ├── sold_aggregate.py           - Loads and combines monthly sales
 └── sold_preprocess.py          - Profiles data quality and cleans sales records
-dashboards
+dashboards/
 ├── competitive_landscape.pdf   - Snapshot of competitive analysis dashboards
 └── sales_trends.pdf            - Snapshot of market analysis dashboards
 README.md
