@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import joblib
 import preprocess
-from pathlib import Path
 
 # load the trained model
 model = joblib.load('model.pkl')
