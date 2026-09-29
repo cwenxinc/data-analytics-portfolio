@@ -17,7 +17,7 @@ Findings from pairwise permutation tests:\
 
 ## Directory Structure
 ```
-scripts
+scripts/
 ├── la_crimes_analysis.Rmd                  - Visually explores and then evaluates differences in victimization patterns using permutation tests
 ├── la_crimes_preprocessing.Rmd             - Loads, cleans and aggregates crime records
 └── simulation_studies.Rmd                  - Assesses the robustness of the permutation tests
