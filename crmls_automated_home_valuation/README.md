@@ -1,5 +1,5 @@
 # CRMLS Single-Family Home Valuation
-This project develops automated valuation models (AVMs) using ***Scikit-learn*** to estimate the sales prices of single-family homes in California. The final model is deployed with ***Streamlit*** for internal use at IDX Exchange. Access the deployed app [here](https://ca-single-family-home-value-estimator.streamlit.app/).
+This project develops automated valuation models (AVMs) using ***Scikit-learn*** to estimate the sales prices of single-family homes in California. The final model is deployed with ***Streamlit*** for client and agent use at IDX Exchange. Access the deployed app [here](https://ca-single-family-home-value-estimator.streamlit.app/).
 
 The project uses monthly sales records from the California Regional Multiple Listing Service (CRMLS) from January 2024 through June 2026, totaling 663,761 records. After filtering for single-family homes according to the project charter, 334,704 records remain for model development.
 
