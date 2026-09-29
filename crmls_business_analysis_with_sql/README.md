@@ -5,13 +5,13 @@ This project analyzes California MLS real estate data across three ***MySQL*** t
 Each SQL file applies specific SQL concepts to a practical business scenario. The final SQL script produces an executive summary of market conditions across California cities, including a composite competitiveness score and a market classification (competitive, balanced, or buyer opportunity) for each city. Each file begins with a summary of the business question and key findings.
 ```
 schema_exploration.sql                    - Schema discovery and data quality checks
-business_scenarios
+business_scenarios/
 ├── most_affordable_cities.sql            - SELECT, WHERE, ORDER BY, and LIMIT
 ├── most_competitive_cities.sql           - Window functions with CTE wrappers
 ├── most_promising_cities.sql             - Aggregations and GROUP BY
 ├── openhouse_recommendations.sql         - JOINs across two tables
 └── sacramento_market_conditions.sql      - Subqueries and CTEs
-executive_summary
+executive_summary/
 ├── final_investor_summary.sql            - Deliverable
 ├── summary_final.csv                     - CSV export of key market metrics and market classifications for 10 major California cities
 └── summary_full.csv                      - CSV export of key market metrics and competitiveness scores for all California cities
