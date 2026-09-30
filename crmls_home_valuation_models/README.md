@@ -51,6 +51,8 @@ Rolling-origin backtests also show stable performance. XGBoost achieves a mean M
 ## Directory Structure
 ```
 app/
+├── assets/
+│   └── logo.png                   - Company logo
 ├── app.py                         - Defines the app interface
 ├── model.pkl                      - Stores the serialized LightGBM model
 └── requirements.txt               - Lists the libraries and versions required for deployment
