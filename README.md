@@ -4,7 +4,7 @@ This repository contains a collection of analytics projects showcasing my experi
 ## Repository Structure
 Each project is organized in its own folder, with a README outlining the project’s purpose and key findings, scripts for data loading, cleaning, and analysis, deliverables, and raw and processed datasets where permitted.
 ```
-data-analytics-portfolio
+data-analytics-portfolio/
 ├── crmls_business_analysis_with_sql      - MySQL
 ├── crmls_home_valuation_models           - Python and Streamlit
 ├── crmls_housing_market_analysis         - Python and Tableau
