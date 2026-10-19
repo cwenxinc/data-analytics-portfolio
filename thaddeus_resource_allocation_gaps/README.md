@@ -18,7 +18,7 @@ The Programs Department had 29 staff members at the time of the project:
 - Survey: 21 respondents (72% participation rate). Informed consent was obtained prior to participation, and responses were collected anonymously.
 - Interviews: 11 participants (40% participation rate) representing a range of roles and tenure. Interviewees provided consent for recording and transcription, and their identities were kept confidential.
 
-**The final analysis included all roles except life coaches** due to the absence of survey responses and interview participation from this group.
+**The final analysis included all roles except life coaches** due to the absence of survey and interview participation from this group.
 
 ## Key Findings
 - Staff reported high work satisfaction overall, though satisfaction varied by role and tenure. Care coordinators, nonprofit leadership, and resource navigators showed within-role differences, with **longer-tenured staff generally reporting lower satisfaction than newer-tenured staff**.
