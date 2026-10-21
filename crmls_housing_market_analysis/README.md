@@ -1,5 +1,5 @@
 # CRMLS Market Analysis
-This project analyzes 600,000+ California MLS real estate listings from January 2024 to April 2026 using ***Pandas*** and ***Tableau*** to uncover trends in pricing, supply, sales volume, and brokerage performance across cities and property types.
+This project analyzes over 1 million California MLS real estate listings from January 2024 to April 2026 using ***Pandas*** and ***Tableau*** to uncover trends in pricing, supply, sales volume, and brokerage performance across cities and property types.
 
 ## Deliverables
 **Market analysis** features three interactive dashboards covering sales trends, supply and demand comparison, and mortgage rates and sales comparison. The dashboards are linked [here](https://public.tableau.com/views/market_analysis_17794744134230/SalesTrends?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link), and PDF snapshots for a selected city and property type are included in this directory.
